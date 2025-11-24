@@ -6,10 +6,241 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  // generate client into src/generated/prisma so the editor can show types
+  // and the project can import the client from source during dev.
+  output = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ---- Enums
+enum PrimaryType {
+  ALBUM
+  SINGLE
+  EP
+  COMPILATION
+  LIVE
+  SOUNDTRACK
+  OTHER
+}
+
+enum PhysicalFormat {
+  CD
+  VINYL
+  DVD
+}
+
+enum DigitalFormat {
+  FLAC
+  ALAC
+  MP3
+  AAC
+  WAV
+  AIFF
+  OTHER
+}
+
+enum SourceKind {
+  RIP
+  BANDCAMP
+  ITUNES
+  OTHER
+}
+
+enum CoverKind {
+  FRONT
+  BACK
+  OBI
+  BOOKLET
+  DISC
+  LABEL
+  SPINE
+  OTHER
+}
+
+enum QualityAxis {
+  COVER
+  PRODUCTION
+  MIX
+}
+
+// ---- Auth (future-ready)
+enum Role {
+  admin
+  user
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(admin) // "admin" | "user"
+  ratings   Rating[]
+  createdAt DateTime @default(now())
+}
+
+// ---- Core catalog (MusicBrainz-style)
+model Artist {
+  id        String         @id @default(cuid())
+  name      String
+  sortName  String?
+  country   String?
+  notes     String?
+  groups    ReleaseGroup[] // albums by the artist (primary artist)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([name])
+  @@index([sortName])
+}
+
+model ReleaseGroup {
+  id              String              @id @default(cuid())
+  title           String
+  primaryType     PrimaryType
+  year            Int?
+  // Classical fields (at album/work level)
+  isClassical     Boolean             @default(false)
+  composer        String? // e.g., "Johann Sebastian Bach"
+  work            String? // e.g., "Mass in B Minor"
+  movement        String? // optional single-string for MVP
+  ensemble        String? // e.g., "Berlin Philharmonic"
+  conductor       String?
+  soloist         String? // e.g., "Martha Argerich"
+  // Relations
+  artistId        String
+  artist          Artist              @relation(fields: [artistId], references: [id])
+  releases        Release[]
+  genres          ReleaseGroupGenre[]
+  covers          Cover[]
+  external        ExternalRef[]
+  // NEW — album-level quality inputs (optional at first)
+  coverValue      Int?
+  productionValue Int?
+  mixValue        Int?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Prevent duplicates: artist + title + year unique (your rule)
+  @@unique([artistId, title, year])
+  @@index([title])
+  @@index([year])
+}
+
+model Release {
+  id             String         @id @default(cuid())
+  title          String
+  date           DateTime?
+  label          String?
+  barcode        String?
+  catalogNo      String?
+  releaseGroupId String
+  releaseGroup   ReleaseGroup   @relation(fields: [releaseGroupId], references: [id])
+  tracks         Track[]
+  // Ownership
+  physicalCopies PhysicalCopy[]
+  digitalCopies  DigitalCopy[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([releaseGroupId])
+}
+
+model Track {
+  id         String   @id @default(cuid())
+  releaseId  String
+  number     Int
+  title      String
+  durationSec Int?
+  release    Release  @relation(fields: [releaseId], references: [id])
+  ratings    Rating[]
+  createdAt  DateTime @default(now())
+
+  @@index([releaseId, number])
+  @@index([title])
+}
+
+// ---- Ownership
+model PhysicalCopy {
+  id              String         @id @default(cuid())
+  releaseId       String
+  format          PhysicalFormat
+  location        String? // shelf/box
+  acquisitionDate DateTime?
+  price           Decimal?       @db.Decimal(12, 2)
+  currency        String? // "HUF", "EUR", ...
+  release         Release        @relation(fields: [releaseId], references: [id])
+}
+
+model DigitalCopy {
+  id        String        @id @default(cuid())
+  releaseId String
+  format    DigitalFormat
+  filePath  String // absolute or relative
+  source    SourceKind
+  release   Release       @relation(fields: [releaseId], references: [id])
+}
+
+model Rating {
+  userId        String
+  targetTrackId String
+  score         Int // 0..10 (application-level constraint; enforce in code)
+  review        String? // free text
+  createdAt     DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  track Track @relation(fields: [targetTrackId], references: [id])
+
+  @@id([userId, targetTrackId])
+  @@index([userId])
+  @@index([targetTrackId])
+}
+
+// ---- Genres (controlled list + junction)
+model Genre {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  // optional parent for future subgenres; leave null for now
+  parentId String?
+  parent   Genre?  @relation("GenreToParent", fields: [parentId], references: [id])
+  children Genre[] @relation("GenreToParent")
+
+  // <-- add this back-relation so Prisma can wire the many-to-many
+  releaseGroups ReleaseGroupGenre[]
+
+  @@index([name])
+}
+
+model ReleaseGroupGenre {
+  releaseGroupId String
+  genreId        String
+  releaseGroup   ReleaseGroup @relation(fields: [releaseGroupId], references: [id])
+  genre          Genre        @relation(fields: [genreId], references: [id])
+
+  @@id([releaseGroupId, genreId])
+}
+
+// ---- Covers (owned by you; multiple images)
+model Cover {
+  id             String       @id @default(cuid())
+  releaseGroupId String
+  kind           CoverKind
+  url            String // where you store (S3/local)
+  width          Int?
+  height         Int?
+  releaseGroup   ReleaseGroup @relation(fields: [releaseGroupId], references: [id])
+}
+
+// ---- External references
+model ExternalRef {
+  id             String       @id @default(cuid())
+  releaseGroupId String
+  musicbrainzId  String?      @unique
+  discogsId      String?      @unique
+  spotifyUrl     String?
+  bandcampUrl    String?
+  releaseGroup   ReleaseGroup @relation(fields: [releaseGroupId], references: [id])
 }
