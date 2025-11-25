@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { quantizeRank, LABEL } from '@/lib/rating'
+import { computeAlbumRating } from '@/lib/rating-album'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
-export default async function ReleasePage({ params }: Props) {
+export default async function AlbumPage({ params }: Props) {
   // In Next 13/14 RSC dynamic params may be a Promise in some runtimes;
   // unwrap it to access `id` safely.
   const { id } = await params
@@ -20,19 +20,20 @@ export default async function ReleasePage({ params }: Props) {
 
   if (!a) return notFound()
 
-  const tracks = a.releases.flatMap((r: any) => r.tracks)
-  const trackAverages = tracks.map((t: any) => {
-    if (!t.ratings || t.ratings.length === 0) return 0
-    const sum = t.ratings.reduce((s: number, r: any) => s + (r.score ?? 0), 0)
-    return sum / t.ratings.length
-  })
-
-  const avgRank = trackAverages.length
-    ? trackAverages.reduce((s: number, v: number) => s + v, 0) / trackAverages.length
-    : 0
-
-  const albumRankValue = Math.round(avgRank * 10) / 10
-  const albumRankLabel = avgRank > 0 ? LABEL[quantizeRank(avgRank)] : '—'
+  // For now, always use the first release (edition)
+  const tracks = a.releases[0]?.tracks ?? []
+  
+  const albumRating = computeAlbumRating(
+    tracks.map((t: any) => ({
+      durationSec: t.durationSec,
+      ratings: t.ratings || []
+    })),
+    {
+      cover: a.coverValue ?? undefined,
+      production: a.productionValue ?? undefined,
+      mix: a.mixValue ?? undefined
+    }
+  )
 
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
@@ -43,8 +44,9 @@ export default async function ReleasePage({ params }: Props) {
           <div className="text-sm mt-1">Tracks: {tracks.length}</div>
         </div>
         <div className="text-right">
-          <div className="text-lg font-medium">{albumRankValue}/10</div>
-          <div className="text-sm text-gray-500">{albumRankLabel}</div>
+          <div className="text-lg font-medium">{albumRating.rankValue}/10</div>
+          <div className="text-sm text-gray-500">{albumRating.rankLabel}</div>
+          <div className="text-xs text-gray-400 mt-1">Rating: {Math.round(albumRating.finalAlbumRating)}</div>
         </div>
       </div>
 
@@ -52,8 +54,7 @@ export default async function ReleasePage({ params }: Props) {
         <h2 className="text-lg font-medium">Track list</h2>
         <ol className="mt-2 space-y-2">
           {tracks.map((t: any) => {
-            // `durationSec` field may not exist in generated types until Prisma client is regenerated.
-            const sec = ((t as any).durationSec ?? Math.floor(((t as any).durationMs ?? 0) / 1000)) as number
+            const sec = t.durationSec ?? 0
             return (
               <li key={t.id} className="flex justify-between">
                 <div>
@@ -70,7 +71,7 @@ export default async function ReleasePage({ params }: Props) {
       </section>
 
       <div>
-        <Link href="/releases" className="underline">Back to releases</Link>
+        <Link href="/albums" className="underline">Back to albums</Link>
       </div>
     </main>
   )
