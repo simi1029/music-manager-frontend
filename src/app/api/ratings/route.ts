@@ -27,3 +27,30 @@ export async function POST(req: Request) {
   })
   return NextResponse.json(rating, { status: 201 })
 }
+
+const RatingDelete = z.object({
+  trackId: z.string().min(1),
+})
+
+export async function DELETE(req: Request) {
+  const body = await req.json().catch(() => null)
+  const parsed = RatingDelete.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+  }
+  const { trackId } = parsed.data
+  // Get the admin user
+  const user = await prisma.user.findUnique({
+    where: { email: 'admin@local' },
+  })
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  }
+  // Delete the rating
+  await prisma.rating.delete({
+    where: { userId_targetTrackId: { userId: user.id, targetTrackId: trackId } },
+  }).catch(() => {
+    // Ignore if rating doesn't exist
+  })
+  return NextResponse.json({ success: true }, { status: 200 })
+}
