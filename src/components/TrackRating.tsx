@@ -97,7 +97,7 @@ export function TrackRating({
         <button
           onClick={handleDelete}
           disabled={isSubmitting || rating === null}
-          className="ml-2 w-8 h-8 rounded transition-colors bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ml-2 w-8 h-8 rounded-full transition-colors border border-gray-300 text-gray-400 hover:border-red-500 hover:text-red-500 hover:bg-red-50 focus:border-red-500 focus:text-red-500 focus:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
           title="Clear rating"
         >
           ✕

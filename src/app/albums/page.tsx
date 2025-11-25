@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { RATING_BG } from '@/lib/rating-colors'
 
 async function getData() {
   // In server runtime a relative URL can fail to parse. Build an absolute base URL
@@ -15,19 +16,33 @@ export default async function AlbumsPage() {
     <main className="mx-auto max-w-3xl p-6 space-y-6">
       <h1 className="text-2xl font-semibold">Your Albums</h1>
       <div className="space-y-3">
-        {albums.map((r: any) => (
-          <Link 
-            key={r.id} 
-            href={`/album/${r.id}`}
-            className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer block"
-          >
-            <div>
-              <div className="font-medium">{r.title}</div>
-              <div className="text-sm text-gray-500">{r.artist}</div>
-              <div className="text-sm mt-1">Tracks: {r.tracksCount}</div>
+        {albums.map((r: any) => {
+          const bgClass = r.albumRankValue > 0 ? RATING_BG[r.albumRankValue] || 'bg-white' : 'bg-white'
+          return (
+            <div 
+              key={r.id}
+              className={`border rounded-lg p-4 transition-all ${bgClass} hover:shadow-md`}
+            >
+              <Link 
+                href={`/album/${r.id}`}
+                className="block cursor-pointer"
+              >
+                <div>
+                  <div className="font-medium">{r.title}</div>
+                  {r.artistId && (
+                    <Link 
+                      href={`/artist/${r.artistId}`}
+                      className="text-sm text-gray-500 hover:text-gray-700 hover:underline inline-block relative z-10"
+                    >
+                      {r.artist}
+                    </Link>
+                  )}
+                  <div className="text-sm mt-1">Tracks: {r.tracksCount}</div>
+                </div>
+              </Link>
             </div>
-          </Link>
-        ))}
+          )
+        })}
       </div>
     </main>
   )

@@ -30,6 +30,7 @@ export async function GET() {
       id: a.id,
       title: a.title,
       artist: a.artist?.name ?? 'Unknown',
+      artistId: a.artist?.id,
       tracksCount: tracks.length,
       // placeholders until we wire computed views:
       // keep a 1-decimal numeric value for UI, and a human-friendly label
