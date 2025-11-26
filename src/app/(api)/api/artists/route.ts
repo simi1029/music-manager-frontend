@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { computeAlbumRating, computeArtistRating } from '@/lib/rating'
 import { getArtistsList } from '@/lib/queries/artists'
+import { withErrorHandler } from '@/lib/apiHelpers'
 
 export async function GET() {
-  try {
+  return withErrorHandler(async () => {
     // Fetch artists using centralized query
     const artists = await getArtistsList()
 
@@ -49,12 +50,6 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json(artistsWithStats)
-  } catch (error) {
-    console.error('Error fetching artists:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch artists' },
-      { status: 500 }
-    )
-  }
+    return artistsWithStats
+  }, 'fetch artists')
 }

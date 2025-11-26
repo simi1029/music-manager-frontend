@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
+import { withAuthErrorHandler } from '@/lib/apiHelpers'
 import { z } from 'zod'
 
 const RatingCreate = z.object({
@@ -8,8 +9,9 @@ const RatingCreate = z.object({
   score: z.number().int().min(0).max(10),
   review: z.string().max(5000).optional(),
 })
+
 export async function POST(req: Request) {
-  try {
+  return withAuthErrorHandler(async () => {
     const user = await requireAuth()
     
     const body = await req.json().catch(() => null)
@@ -24,13 +26,8 @@ export async function POST(req: Request) {
       update: { score, review },
       create: { userId: user.id, targetTrackId: trackId, score, review },
     })
-    return NextResponse.json(rating, { status: 201 })
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    throw error
-  }
+    return rating
+  }, 'create rating')
 }
 
 const RatingDelete = z.object({
@@ -38,7 +35,7 @@ const RatingDelete = z.object({
 })
 
 export async function DELETE(req: Request) {
-  try {
+  return withAuthErrorHandler(async () => {
     const user = await requireAuth()
     
     const body = await req.json().catch(() => null)
@@ -54,11 +51,6 @@ export async function DELETE(req: Request) {
     }).catch(() => {
       // Ignore if rating doesn't exist
     })
-    return NextResponse.json({ success: true }, { status: 200 })
-  } catch (error) {
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    throw error
-  }
+    return { success: true }
+  }, 'delete rating')
 }

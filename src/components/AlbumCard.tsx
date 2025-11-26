@@ -175,12 +175,24 @@ export const AlbumCard = memo(function AlbumCard({
             )}
             
             {/* Metadata Line */}
-            <div className={`text-sm mt-1 ${metadataColor}`}>
+            <div className={`text-sm mt-1 ${metadataColor} flex items-center gap-1`}>
               {showYear && year && <span>{year}</span>}
               {showYear && year && showType && primaryType && <span> · </span>}
               {showType && primaryType && <span>{primaryType}</span>}
-              {(showYear || showType) && showTrackCount && album.tracksCount && <span> · </span>}
-              {showTrackCount && album.tracksCount && <span>Tracks: {album.tracksCount}</span>}
+              {((showYear && year) || (showType && primaryType)) && showTrackCount && album.tracksCount !== undefined && <span> · </span>}
+              {showTrackCount && album.tracksCount !== undefined && (
+                <span className="flex items-center gap-1">
+                  <svg
+                    className="inline-block"
+                    style={{ width: 14, height: 14 }}
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                  </svg>
+                  {album.tracksCount}
+                </span>
+              )}
             </div>
           </div>
 
