@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { RATING_COLORS, RATING_BG } from '@/lib/rating'
+import { useToast } from '@/components/ui/toast'
 
 type TrackRatingProps = {
   trackId: string
@@ -23,6 +24,7 @@ export function TrackRating({
   const [rating, setRating] = useState<number | null>(currentScore ?? null)
   const [hover, setHover] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { showToast } = useToast()
 
   const handleRating = async (score: number) => {
     setIsSubmitting(true)
@@ -37,7 +39,7 @@ export function TrackRating({
       onRatingChange?.()
     } catch (error) {
       console.error('Error saving rating:', error)
-      alert('Failed to save rating')
+      showToast('Failed to save rating', 'error')
     } finally {
       setIsSubmitting(false)
     }
@@ -56,7 +58,7 @@ export function TrackRating({
       onRatingChange?.()
     } catch (error) {
       console.error('Error deleting rating:', error)
-      alert('Failed to delete rating')
+      showToast('Failed to delete rating', 'error')
     } finally {
       setIsSubmitting(false)
     }

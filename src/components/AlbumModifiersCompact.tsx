@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { quantizeRank, RATING_COLORS, RATING_BG } from '@/lib/rating'
+import { useToast } from '@/components/ui/toast'
 
 type AlbumModifiersCompactProps = {
   albumId: string
@@ -18,6 +19,7 @@ export function AlbumModifiersCompact({
   mixValue: initialMix,
 }: AlbumModifiersCompactProps) {
   const router = useRouter()
+  const { showToast } = useToast()
   const [isExpanded, setIsExpanded] = useState(false)
   const [cover, setCover] = useState(initialCover ?? 5)
   const [production, setProduction] = useState(initialProduction ?? 5)
@@ -55,7 +57,7 @@ export function AlbumModifiersCompact({
       setIsExpanded(false)
     } catch (error) {
       console.error('Error saving modifiers:', error)
-      alert('Failed to save modifiers')
+      showToast('Failed to save modifiers', 'error')
     } finally {
       setIsSubmitting(false)
     }

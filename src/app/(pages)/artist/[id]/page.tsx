@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { quantizeRank, RATING_BG } from '@/lib/rating'
+import { quantizeRank, RATING_BG, calculateAlbumAverage } from '@/lib/rating'
+import { extractTracks } from '@/lib/utils'
+import type { ArtistDetail } from '@/types/components'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
@@ -18,7 +20,7 @@ export default async function ArtistPage({ params }: Props) {
         orderBy: { year: 'desc' },
       },
     },
-  })
+  }) as ArtistDetail | null
 
   if (!artist) return notFound()
 
@@ -40,16 +42,9 @@ export default async function ArtistPage({ params }: Props) {
       <section>
         <h2 className="text-lg font-medium mb-3">Albums ({artist.groups.length})</h2>
         <div className="space-y-3">
-          {artist.groups.map((album: any) => {
-            const tracks = album.releases.flatMap((r: any) => r.tracks)
-            const trackAverages = tracks.map((t: any) => {
-              if (!t.ratings || t.ratings.length === 0) return 0
-              const sum = t.ratings.reduce((s: number, r: any) => s + (r.score ?? 0), 0)
-              return sum / t.ratings.length
-            })
-            const avgRank = trackAverages.length
-              ? trackAverages.reduce((s: number, v: number) => s + v, 0) / trackAverages.length
-              : 0
+          {artist.groups.map((album) => {
+            const tracks = extractTracks(album)
+            const avgRank = calculateAlbumAverage(tracks)
             
             const rankValue = quantizeRank(avgRank)
             const bgClass = avgRank > 0 ? RATING_BG[rankValue] || 'bg-white' : 'bg-white'

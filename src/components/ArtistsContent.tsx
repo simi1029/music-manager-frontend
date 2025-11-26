@@ -3,17 +3,9 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { quantizeRank, RATING_COLORS, RATING_BG } from '@/lib/rating'
+import type { ArtistListItem } from '@/types/api'
 
-type Artist = {
-  id: string
-  name: string
-  country: string | null
-  albumCount: number
-  ratedAlbumCount: number
-  avgRating: number
-}
-
-export function ArtistsContent({ artists }: { artists: Artist[] }) {
+export function ArtistsContent({ artists }: { artists: ArtistListItem[] }) {
   const router = useRouter()
   
   return (

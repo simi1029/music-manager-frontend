@@ -5,6 +5,7 @@ import { computeAlbumRating } from '@/lib/rating'
 import { TrackList } from '@/components/TrackList'
 import { AlbumModifiersCompact } from '@/components/AlbumModifiersCompact'
 import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'
+import type { AlbumDetail } from '@/types/components'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
@@ -19,17 +20,17 @@ export default async function AlbumPage({ params }: Props) {
       artist: true,
       releases: { include: { tracks: { include: { ratings: true } } } },
     },
-  })
+  }) as AlbumDetail | null
 
   if (!a) return notFound()
 
   // For now, always use the first release (edition)
   const tracks = a.releases[0]?.tracks ?? []
   
-  const hasAnyRatings = tracks.some((t: any) => t.ratings && t.ratings.length > 0)
+  const hasAnyRatings = tracks.some((t) => t.ratings && t.ratings.length > 0)
   
   const albumRating = computeAlbumRating(
-    tracks.map((t: any) => ({
+    tracks.map((t) => ({
       durationSec: t.durationSec,
       ratings: t.ratings || []
     })),

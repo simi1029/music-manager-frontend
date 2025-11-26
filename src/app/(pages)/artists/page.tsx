@@ -1,7 +1,9 @@
 import { ArtistsContent } from '@/components/ArtistsContent'
+import { getBaseUrl } from '@/lib/utils'
+import type { ArtistListItem } from '@/types/api'
 
-async function getData() {
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+async function getData(): Promise<ArtistListItem[]> {
+  const base = getBaseUrl()
   const res = await fetch(`${base}/api/artists`, { cache: 'no-store' })
   if (!res.ok) throw new Error(`Failed to fetch artists: ${res.status} ${res.statusText}`)
   return res.json()

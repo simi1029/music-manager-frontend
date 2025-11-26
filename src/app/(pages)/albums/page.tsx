@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { RATING_BG, quantizeRank } from '@/lib/rating'
 import { AlbumsContent } from '@/components/AlbumsContent'
+import { getBaseUrl } from '@/lib/utils'
+import type { AlbumListItem } from '@/types/api'
 
-async function getData() {
-  // In server runtime a relative URL can fail to parse. Build an absolute base URL
-  // when NEXT_PUBLIC_BASE_URL isn't provided (use VERCEL_URL when available).
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+async function getData(): Promise<AlbumListItem[]> {
+  const base = getBaseUrl()
   const res = await fetch(`${base}/api/albums`, { cache: 'no-store' })
   if (!res.ok) throw new Error(`Failed to fetch albums: ${res.status} ${res.statusText}`)
   return res.json()

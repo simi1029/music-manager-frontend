@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { quantizeRank, LABEL } from '@/lib/rating'
+import { quantizeRank, LABEL, calculateAlbumAverage } from '@/lib/rating'
+import { extractTracks } from '@/lib/utils'
+import type { AlbumListItem } from '@/types/api'
 
 export async function GET() {
   // basic list: latest ReleaseGroups with artist + counts
@@ -14,18 +16,9 @@ export async function GET() {
     take: 50,
   })
 
-  const shaped = (albums as any[]).map((a: any) => {
-    const tracks = a.releases.flatMap((r: any) => r.tracks)
-    // compute per-track average from ratings, then album average across tracks
-    const trackAverages = tracks.map((t: any) => {
-      if (!t.ratings || t.ratings.length === 0) return 0
-      const sum = t.ratings.reduce((s: number, r: any) => s + (r.score ?? 0), 0)
-      return sum / t.ratings.length
-    })
-
-    const avgRank = trackAverages.length
-      ? trackAverages.reduce((s: number, v: number) => s + v, 0) / trackAverages.length
-      : 0
+  const shaped: AlbumListItem[] = albums.map((a) => {
+    const tracks = extractTracks(a)
+    const avgRank = calculateAlbumAverage(tracks)
     return {
       id: a.id,
       title: a.title,

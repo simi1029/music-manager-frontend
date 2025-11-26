@@ -1,3 +1,5 @@
+import type { TrackForRating, AlbumModifiers, AlbumRating } from '@/types/utils'
+
 // ─────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────
@@ -48,12 +50,39 @@ export function quantizeRank(mean: number): ScaleValue {
 }
 
 // ─────────────────────────────────────────────────────────
+// Track and Album Average Calculations
+// ─────────────────────────────────────────────────────────
+
+/**
+ * Calculate average rating from a single track's ratings
+ */
+export function calculateTrackAverage(track: { 
+  ratings: Array<{ score: number | null }> 
+}): number {
+  if (!track.ratings || track.ratings.length === 0) return 0
+  const sum = track.ratings.reduce((s, r) => s + (r.score ?? 0), 0)
+  return sum / track.ratings.length
+}
+
+/**
+ * Calculate album average rating from multiple tracks
+ */
+export function calculateAlbumAverage(tracks: Array<{ 
+  ratings: Array<{ score: number | null }> 
+}>): number {
+  const trackAverages = tracks.map(calculateTrackAverage)
+  return trackAverages.length 
+    ? trackAverages.reduce((s, v) => s + v, 0) / trackAverages.length 
+    : 0
+}
+
+// ─────────────────────────────────────────────────────────
 // Album rating calculation
 // ─────────────────────────────────────────────────────────
-export function computeAlbumRating(tracks: {
-  durationSec: number | null
-  ratings: { score: number }[]
-}[], quality: { cover?: number; production?: number; mix?: number }) {
+export function computeAlbumRating(
+  tracks: TrackForRating[], 
+  quality: AlbumModifiers
+): AlbumRating & { baseRating: number; qualityBoost: number } {
 
   let totalRatingValue = 0
   let totalRankValue = 0

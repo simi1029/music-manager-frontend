@@ -2,17 +2,10 @@
 
 import { TrackRating } from './TrackRating'
 import { useRouter } from 'next/navigation'
-
-type Track = {
-  id: string
-  number: number
-  title: string
-  durationSec: number | null
-  ratings: { score: number }[]
-}
+import type { TrackWithRatings } from '@/types/components'
 
 type TrackListProps = {
-  tracks: Track[]
+  tracks: TrackWithRatings[]
 }
 
 export function TrackList({ tracks }: TrackListProps) {
