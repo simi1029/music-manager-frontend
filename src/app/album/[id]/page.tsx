@@ -72,10 +72,6 @@ export default async function AlbumPage({ params }: Props) {
         <h2 className="text-lg font-medium">Track list</h2>
         <TrackList tracks={tracks} />
       </section>
-
-      <div>
-        <Link href="/albums" className="underline">Back to albums</Link>
-      </div>
     </main>
   )
 }

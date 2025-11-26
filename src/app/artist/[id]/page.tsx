@@ -77,10 +77,6 @@ export default async function ArtistPage({ params }: Props) {
           })}
         </div>
       </section>
-
-      <div>
-        <Link href="/albums" className="underline">Back to albums</Link>
-      </div>
     </main>
   )
 }
