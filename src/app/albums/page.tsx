@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { RATING_BG } from '@/lib/rating-colors'
+import { quantizeRank } from '@/lib/rating'
 
 async function getData() {
   // In server runtime a relative URL can fail to parse. Build an absolute base URL
@@ -17,7 +18,8 @@ export default async function AlbumsPage() {
       <h1 className="text-2xl font-semibold">Your Albums</h1>
       <div className="space-y-3">
         {albums.map((r: any) => {
-          const bgClass = r.albumRankValue > 0 ? RATING_BG[r.albumRankValue] || 'bg-white' : 'bg-white'
+          const quantized = r.albumRankValue > 0 ? quantizeRank(r.albumRankValue) : 0
+          const bgClass = quantized > 0 ? RATING_BG[quantized] || 'bg-white' : 'bg-white'
           return (
             <div 
               key={r.id}

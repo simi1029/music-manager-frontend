@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { computeAlbumRating } from '@/lib/rating-album'
 import { TrackList } from '@/components/TrackList'
-import { RATING_COLORS, RATING_BG } from '@/lib/rating-colors'
+import { AlbumModifiers } from '@/components/AlbumModifiers'
+import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
@@ -39,9 +40,6 @@ export default async function AlbumPage({ params }: Props) {
     }
   )
 
-  const colorClass = RATING_COLORS[albumRating.rankValue] || "text-gray-500"
-  const bgClass = RATING_BG[albumRating.rankValue] || "bg-gray-100"
-
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -55,16 +53,20 @@ export default async function AlbumPage({ params }: Props) {
           </Link>
           <div className="text-sm mt-1">Tracks: {tracks.length}</div>
         </div>
-        <div className="text-right">
-          <div className={`text-lg font-medium ${hasAnyRatings ? colorClass : 'text-gray-400'}`}>
-            {hasAnyRatings ? `${albumRating.rankValue}/10` : '-/10'}
-          </div>
-          <div className={`text-sm px-3 py-1 rounded-full inline-block ${hasAnyRatings ? `${colorClass} ${bgClass}` : 'text-gray-500'}`}>
-            {hasAnyRatings ? albumRating.rankLabel : '—'}
-          </div>
-          <div className="text-xs text-gray-400 mt-1">Rating: {hasAnyRatings ? Math.round(albumRating.finalAlbumRating) : '-'}</div>
-        </div>
+        <AlbumRatingDisplay
+          rankValue={albumRating.rankValue}
+          rankLabel={albumRating.rankLabel}
+          finalAlbumRating={albumRating.finalAlbumRating}
+          hasAnyRatings={hasAnyRatings}
+        />
       </div>
+
+      <AlbumModifiers
+        albumId={a.id}
+        coverValue={a.coverValue}
+        productionValue={a.productionValue}
+        mixValue={a.mixValue}
+      />
 
       <section>
         <h2 className="text-lg font-medium">Track list</h2>

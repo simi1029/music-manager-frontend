@@ -26,7 +26,12 @@ export function computeAlbumRating(tracks: {
   const production = quality.production ?? 0
   const mix = quality.mix ?? 0
 
-  const qualityBoost = 1 + (cover + production + mix) / 100
+  let qualityBoost = 1 + (cover + production + mix) / 100
+  
+  // Add 5% bonus if all modifiers are >= 9
+  if (cover >= 9 && production >= 9 && mix >= 9) {
+    qualityBoost *= 1.05
+  }
 
   const finalAlbumRating = totalRatingValue * qualityBoost
 
