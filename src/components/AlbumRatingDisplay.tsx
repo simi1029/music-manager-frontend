@@ -1,4 +1,4 @@
-import { RATING_COLORS, RATING_BG } from '@/lib/rating-colors'
+import { RATING_COLORS, RATING_BG } from '@/lib/rating'
 
 type AlbumRatingDisplayProps = {
   rankValue: number

@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { RATING_BG } from '@/lib/rating-colors'
-import { quantizeRank } from '@/lib/rating'
+import { RATING_BG, quantizeRank } from '@/lib/rating'
 import { AlbumsContent } from '@/components/AlbumsContent'
 
 async function getData() {

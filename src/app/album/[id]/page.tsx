@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { computeAlbumRating } from '@/lib/rating-album'
+import { computeAlbumRating } from '@/lib/rating'
 import { TrackList } from '@/components/TrackList'
 import { AlbumModifiersCompact } from '@/components/AlbumModifiersCompact'
 import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'

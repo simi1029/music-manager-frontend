@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { quantizeRank } from '@/lib/rating'
-import { RATING_BG } from '@/lib/rating-colors'
+import { quantizeRank, RATING_BG } from '@/lib/rating'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 

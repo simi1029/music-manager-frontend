@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { quantizeRank } from '@/lib/rating'
-import { RATING_COLORS, RATING_BG } from '@/lib/rating-colors'
+import { quantizeRank, RATING_COLORS, RATING_BG } from '@/lib/rating'
 
 type AlbumModifiersCompactProps = {
   albumId: string

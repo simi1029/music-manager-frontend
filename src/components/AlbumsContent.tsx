@@ -2,8 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { RATING_BG } from '@/lib/rating-colors'
-import { quantizeRank } from '@/lib/rating'
+import { RATING_BG, quantizeRank } from '@/lib/rating'
 
 export function AlbumsContent({ albums }: { albums: any[] }) {
   const router = useRouter()
