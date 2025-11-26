@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { RATING_COLORS, RATING_BG } from '@/lib/rating'
 
 type TrackRatingProps = {
   trackId: string
@@ -77,23 +78,32 @@ export function TrackRating({
         )}
       </div>
       <div className="flex items-center gap-1">
-        {[0, 1, 2, 3, 4, 5, 7, 10].map((score) => (
-          <button
-            key={score}
-            onClick={() => handleRating(score)}
-            onMouseEnter={() => setHover(score)}
-            onMouseLeave={() => setHover(null)}
-            disabled={isSubmitting}
-            className={`w-8 h-8 rounded transition-colors ${
-              displayRating !== null && score <= displayRating
-                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-            title={`Rate ${score}/10`}
-          >
-            {score}
-          </button>
-        ))}
+        {[0, 1, 2, 3, 4, 5, 7, 10].map((score) => {
+          const isHovering = hover !== null && score <= hover
+          const isSelected = rating === score
+          const colorClass = RATING_COLORS[score] || 'text-gray-600'
+          const bgClass = RATING_BG[score] || 'bg-gray-100'
+          
+          return (
+            <button
+              key={score}
+              onClick={() => handleRating(score)}
+              onMouseEnter={() => setHover(score)}
+              onMouseLeave={() => setHover(null)}
+              disabled={isSubmitting}
+              className={`w-8 h-8 rounded transition-all ${
+                isSelected
+                  ? `${colorClass} ${bgClass} shadow-sm scale-105`
+                  : isHovering
+                  ? `${colorClass} ${bgClass} opacity-70`
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+              } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              title={`Rate ${score}/10`}
+            >
+              {score}
+            </button>
+          )
+        })}
         <button
           onClick={handleDelete}
           disabled={isSubmitting || rating === null}
