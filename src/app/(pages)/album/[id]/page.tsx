@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/db'
 import { computeAlbumRating } from '@/lib/rating'
+import { getAlbumWithRatings } from '@/lib/queries/albums'
 import { TrackList } from '@/components/TrackList'
 import { AlbumModifiersCompact } from '@/components/AlbumModifiersCompact'
 import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'
-import type { AlbumDetail } from '@/types/components'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
@@ -14,13 +13,8 @@ export default async function AlbumPage({ params }: Props) {
   // unwrap it to access `id` safely.
   const { id } = await params
 
-  const a = await prisma.releaseGroup.findUnique({
-    where: { id },
-    include: {
-      artist: true,
-      releases: { include: { tracks: { include: { ratings: true } } } },
-    },
-  }) as AlbumDetail | null
+  // Fetch album using centralized query
+  const a = await getAlbumWithRatings(id)
 
   if (!a) return notFound()
 

@@ -1,29 +1,18 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/db'
 import { computeAlbumRating, quantizeRank, LABEL } from '@/lib/rating'
 import { extractTracks } from '@/lib/utils'
+import { getArtistWithAlbums } from '@/lib/queries/artists'
 import { AlbumCard } from '@/components/AlbumCard'
-import type { ArtistDetail } from '@/types/components'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
 export default async function ArtistPage({ params }: Props) {
   const { id } = await params
 
-  const artist = await prisma.artist.findUnique({
-    where: { id },
-    include: {
-      groups: {
-        include: {
-          releases: { include: { tracks: { include: { ratings: true } } } },
-          covers: true,
-        },
-        orderBy: { year: 'desc' },
-      },
-    },
-  }) as ArtistDetail | null
+  // Fetch artist using centralized query
+  const artist = await getArtistWithAlbums(id)
 
   if (!artist) return notFound()
 

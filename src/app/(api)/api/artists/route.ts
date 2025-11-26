@@ -1,29 +1,11 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 import { computeAlbumRating, computeArtistRating } from '@/lib/rating'
+import { getArtistsList } from '@/lib/queries/artists'
 
 export async function GET() {
   try {
-    const artists = await prisma.artist.findMany({
-      include: {
-        groups: {
-          include: {
-            releases: {
-              include: {
-                tracks: {
-                  include: {
-                    ratings: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        name: 'asc'
-      }
-    })
+    // Fetch artists using centralized query
+    const artists = await getArtistsList()
 
     const artistsWithStats = artists.map(artist => {
       const albumCount = artist.groups.length

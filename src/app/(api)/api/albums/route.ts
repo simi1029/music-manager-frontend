@@ -1,21 +1,12 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 import { quantizeRank, LABEL, calculateAlbumAverage } from '@/lib/rating'
 import { extractTracks } from '@/lib/utils'
+import { getAlbumsList } from '@/lib/queries/albums'
 import type { AlbumListItem } from '@/types/api'
 
 export async function GET() {
-  // basic list: latest ReleaseGroups with artist + counts
-  const albums = await prisma.releaseGroup.findMany({
-    include: {
-      artist: true,
-      // include tracks and their ratings so we can compute album-level averages
-      releases: { include: { tracks: { include: { ratings: true } } } },
-      covers: true, // Include covers to get album artwork
-    },
-    orderBy: { updatedAt: 'desc' },
-    take: 50,
-  })
+  // Fetch albums using centralized query
+  const albums = await getAlbumsList()
 
   const shaped: AlbumListItem[] = albums.map((a) => {
     const tracks = extractTracks(a)
