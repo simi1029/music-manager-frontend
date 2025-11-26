@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { UserMenu } from './UserMenu'
 
 export function Header() {
   const pathname = usePathname()
@@ -37,21 +38,24 @@ export function Header() {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive(item.path)
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
+          <div className="hidden md:flex items-center gap-4">
+            <nav className="flex gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(item.path)
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+            <UserMenu />
+          </div>
 
           {/* Mobile Hamburger Button */}
           <button
@@ -89,6 +93,9 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
+              <div className="mt-2 px-4">
+                <UserMenu />
+              </div>
             </div>
           </nav>
         )}
