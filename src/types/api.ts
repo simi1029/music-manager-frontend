@@ -20,6 +20,8 @@ export interface ArtistListItem {
   albumCount: number
   ratedAlbumCount: number
   avgRating: number
+  rankValue: number
+  rankLabel: string
   imageUrl: string | null
 }
 

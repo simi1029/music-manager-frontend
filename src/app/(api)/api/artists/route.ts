@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { computeAlbumRating } from '@/lib/rating'
+import { computeAlbumRating, computeArtistRating } from '@/lib/rating'
 
 export async function GET() {
   try {
@@ -28,32 +28,31 @@ export async function GET() {
     const artistsWithStats = artists.map(artist => {
       const albumCount = artist.groups.length
       
-      // Calculate average rating across all albums
-      let totalRating = 0
-      let ratedAlbumCount = 0
-      
-      for (const group of artist.groups) {
+      // Calculate rating for each album
+      const albumRatings = artist.groups.map(group => {
         const tracks = group.releases.flatMap(r => r.tracks)
         const hasRatings = tracks.some(t => t.ratings && t.ratings.length > 0)
         
-        if (hasRatings) {
-          const albumRating = computeAlbumRating(
-            tracks.map(t => ({
-              durationSec: t.durationSec,
-              ratings: t.ratings || []
-            })),
-            {
-              cover: group.coverValue ?? undefined,
-              production: group.productionValue ?? undefined,
-              mix: group.mixValue ?? undefined
-            }
-          )
-          totalRating += albumRating.rankValue
-          ratedAlbumCount++
+        if (!hasRatings) {
+          return { rankValue: 0, finalAlbumRating: 0 }
         }
-      }
+        
+        return computeAlbumRating(
+          tracks.map(t => ({
+            durationSec: t.durationSec,
+            ratings: t.ratings || []
+          })),
+          {
+            cover: group.coverValue ?? undefined,
+            production: group.productionValue ?? undefined,
+            mix: group.mixValue ?? undefined
+          }
+        )
+      })
       
-      const avgRating = ratedAlbumCount > 0 ? totalRating / ratedAlbumCount : 0
+      // Compute artist rating (filters out unrated albums automatically)
+      const artistRating = computeArtistRating(albumRatings)
+      const ratedAlbumCount = albumRatings.filter(a => a.rankValue > 0).length
       
       return {
         id: artist.id,
@@ -61,7 +60,9 @@ export async function GET() {
         country: artist.country,
         albumCount,
         ratedAlbumCount,
-        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal
+        avgRating: artistRating.avgFinalRating,
+        rankValue: artistRating.rankValue,
+        rankLabel: artistRating.rankLabel,
         imageUrl: artist.imageUrl
       }
     })

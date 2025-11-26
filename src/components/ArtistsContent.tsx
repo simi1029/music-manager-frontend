@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useMemo } from 'react'
-import { quantizeRank, RATING_COLORS, RATING_BG } from '@/lib/rating'
+import { RATING_COLORS, RATING_BG } from '@/lib/rating'
 import type { ArtistListItem } from '@/types/api'
 
 export function ArtistsContent({ artists }: { artists: ArtistListItem[] }) {
@@ -22,12 +22,11 @@ export function ArtistsContent({ artists }: { artists: ArtistListItem[] }) {
 }
 
 function ArtistCard({ artist }: { artist: ArtistListItem }) {
-  const { quantized, bgClass, textColor } = useMemo(() => {
-    const quantized = artist.avgRating > 0 ? quantizeRank(artist.avgRating) : 0
-    const bgClass = quantized > 0 ? RATING_BG[quantized] || 'bg-white' : 'bg-white'
-    const textColor = quantized > 0 ? RATING_COLORS[quantized] || 'text-gray-500' : 'text-gray-400'
-    return { quantized, bgClass, textColor }
-  }, [artist.avgRating])
+  const { bgClass, textColor } = useMemo(() => {
+    const bgClass = artist.rankValue > 0 ? RATING_BG[artist.rankValue] || 'bg-white' : 'bg-white'
+    const textColor = artist.rankValue > 0 ? RATING_COLORS[artist.rankValue] || 'text-gray-500' : 'text-gray-400'
+    return { bgClass, textColor }
+  }, [artist.rankValue])
 
   return (
     <Link
@@ -81,8 +80,11 @@ function ArtistCard({ artist }: { artist: ArtistListItem }) {
           </div>
           {artist.avgRating > 0 && (
             <div className="text-right ml-4">
-              <div className={`text-lg font-medium ${textColor}`}>
-                {artist.avgRating.toFixed(1)}/10
+              <div className={`text-lg font-bold ${textColor}`}>
+                {artist.rankLabel}
+              </div>
+              <div className={`text-sm ${textColor}`}>
+                {artist.avgRating}
               </div>
               <div className="text-xs text-gray-500">avg rating</div>
             </div>

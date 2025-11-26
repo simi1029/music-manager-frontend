@@ -44,6 +44,18 @@ export const RATING_TEXT_COLORS: Record<number, string> = {
   10: "text-violet-900"   // Dark violet on violet-100
 }
 
+// Artist-specific labels (prestige-based)
+export const ARTIST_LABEL: Record<ScaleValue, string> = {
+  0: 'Forgettable',
+  1: 'Mediocre',
+  2: 'Decent',
+  3: 'Solid',
+  4: 'Accomplished',
+  5: 'Outstanding',
+  7: 'Iconic',
+  10: 'Legendary'
+}
+
 // ─────────────────────────────────────────────────────────
 // Pure rating utilities
 // ─────────────────────────────────────────────────────────
@@ -131,6 +143,42 @@ export function computeAlbumRating(
     rankLabel,
     finalAlbumRating,
     baseRating: totalRatingValue,
-    qualityBoost,
+    qualityBoost
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// Artist rating calculation
+// ─────────────────────────────────────────────────────────
+export function computeArtistRating(
+  albumRatings: Array<{ rankValue: number; finalAlbumRating: number }>
+): { rankValue: ScaleValue; rankLabel: string; avgFinalRating: number } {
+  // Filter out unrated albums (rankValue 0)
+  const ratedAlbums = albumRatings.filter(album => album.rankValue > 0)
+
+  if (ratedAlbums.length === 0) {
+    return {
+      rankValue: 0,
+      rankLabel: ARTIST_LABEL[0],
+      avgFinalRating: 0
+    }
+  }
+
+  // Average the quantized album ranks
+  const totalRank = ratedAlbums.reduce((sum, album) => sum + album.rankValue, 0)
+  const avgRank = totalRank / ratedAlbums.length
+
+  // Average the final album ratings and round to whole number
+  const totalFinalRating = ratedAlbums.reduce((sum, album) => sum + album.finalAlbumRating, 0)
+  const avgFinalRating = Math.round(totalFinalRating / ratedAlbums.length)
+
+  // Quantize the average again
+  const rankValue = quantizeRank(avgRank)
+  const rankLabel = ARTIST_LABEL[rankValue]
+
+  return {
+    rankValue,
+    rankLabel,
+    avgFinalRating
   }
 }
