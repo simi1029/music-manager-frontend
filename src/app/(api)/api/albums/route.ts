@@ -19,7 +19,9 @@ export async function GET() {
 
   const shaped: AlbumListItem[] = albums.map((a) => {
     const tracks = extractTracks(a)
-    const avgRank = calculateAlbumAverage(tracks)
+    const hasRatings = tracks.some(t => t.ratings && t.ratings.length > 0)
+    const avgRank = hasRatings ? calculateAlbumAverage(tracks) : null
+    const quantized = avgRank !== null ? quantizeRank(avgRank) : null
     // Get the first cover URL if available
     const coverUrl = a.covers && a.covers.length > 0 ? a.covers[0].url : null
     
@@ -29,10 +31,8 @@ export async function GET() {
       artist: a.artist?.name ?? 'Unknown',
       artistId: a.artist?.id,
       tracksCount: tracks.length,
-      // placeholders until we wire computed views:
-      // keep a 1-decimal numeric value for UI, and a human-friendly label
-      albumRankValue: Math.round(avgRank * 10) / 10,
-      albumRankLabel: avgRank > 0 ? LABEL[quantizeRank(avgRank)] : '—',
+      albumRankValue: quantized,
+      albumRankLabel: quantized !== null ? LABEL[quantized] : '—',
       coverUrl,
     }
   })

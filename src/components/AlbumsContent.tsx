@@ -14,7 +14,8 @@ export function AlbumsContent({ albums }: { albums: AlbumListItem[] }) {
             title: album.title,
             coverUrl: album.coverUrl,
             tracksCount: album.tracksCount,
-            rating: album.albumRankValue,
+            rankValue: album.albumRankValue,
+            rankLabel: album.albumRankLabel,
           }}
           artist={
             album.artistId
@@ -28,6 +29,7 @@ export function AlbumsContent({ albums }: { albums: AlbumListItem[] }) {
           showArtist={true}
           showTrackCount={true}
           showRating={true}
+          showRatingAsLabel={true}
         />
       ))}
     </div>

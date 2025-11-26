@@ -13,6 +13,8 @@ export interface AlbumCardProps {
     coverUrl?: string | null
     tracksCount?: number
     rating?: number | null // 0-10 scale
+    rankValue?: number | null // Quantized rank value (null = unrated)
+    rankLabel?: string // Textual rank label
   }
 
   // Optional context-specific data
@@ -33,7 +35,7 @@ export interface AlbumCardProps {
   showType?: boolean
   showTrackCount?: boolean
   showRating?: boolean
-  showRatingLabel?: boolean // Show "Very Good" etc alongside numeric
+  showRatingAsLabel?: boolean // Show textual label ("Excellent") instead of numeric (7/10)
 
   // Behavior customization
   onClick?: (albumId: string) => void // Override default navigation
@@ -54,22 +56,22 @@ export const AlbumCard = memo(function AlbumCard({
   showType = false,
   showTrackCount = true,
   showRating = true,
-  showRatingLabel = false,
+  showRatingAsLabel = false,
   onClick,
   clickable = true,
   className = '',
 }: AlbumCardProps) {
   // Calculate rating-based styling
   const { quantized, bgClass, textColor, artistLinkColor, metadataColor } = useMemo(() => {
-    const rating = album.rating ?? 0
-    const quantized = rating > 0 ? quantizeRank(rating) : 0
-    const bgClass = quantized > 0 ? RATING_BG[quantized] || 'bg-white' : 'bg-white'
-    const textColor = quantized > 0 ? RATING_TEXT_COLORS[quantized] || 'text-gray-900' : 'text-gray-900'
+    const quantized = album.rankValue ?? null
+    // null = unrated (no color), 0 = rated as Poor (red color), >0 = other ratings
+    const bgClass = quantized !== null ? RATING_BG[quantized] || 'bg-white' : 'bg-white'
+    const textColor = quantized !== null ? RATING_TEXT_COLORS[quantized] || 'text-gray-900' : 'text-gray-900'
     // Artist link and metadata use slightly lighter shade for hierarchy
-    const artistLinkColor = quantized > 0 ? RATING_TEXT_COLORS[quantized]?.replace('-900', '-700') || 'text-gray-500' : 'text-gray-500'
-    const metadataColor = quantized > 0 ? RATING_TEXT_COLORS[quantized]?.replace('-900', '-700') || 'text-gray-600' : 'text-gray-600'
+    const artistLinkColor = quantized !== null ? RATING_TEXT_COLORS[quantized]?.replace('-900', '-700') || 'text-gray-500' : 'text-gray-500'
+    const metadataColor = quantized !== null ? RATING_TEXT_COLORS[quantized]?.replace('-900', '-700') || 'text-gray-600' : 'text-gray-600'
     return { quantized, bgClass, textColor, artistLinkColor, metadataColor }
-  }, [album.rating])
+  }, [album.rankValue])
 
   // Determine cover size in pixels
   const coverPx = useMemo(() => {
@@ -183,14 +185,15 @@ export const AlbumCard = memo(function AlbumCard({
           </div>
 
           {/* Rating */}
-          {showRating && album.rating && album.rating > 0 && (
+          {showRating && quantized !== null && (
             <div className="text-right ml-4 flex-shrink-0">
-              <div className={`text-lg font-medium ${textColor}`}>
-                {Math.round(album.rating * 10) / 10}/10
-              </div>
-              {showRatingLabel && quantized > 0 && (
-                <div className={`text-xs ${metadataColor}`}>
-                  {/* Could add LABEL[quantized] here if desired */}
+              {showRatingAsLabel && album.rankLabel ? (
+                <div className={`text-lg font-bold ${textColor}`}>
+                  {album.rankLabel}
+                </div>
+              ) : (
+                <div className={`text-lg font-medium ${textColor}`}>
+                  {quantized}/10
                 </div>
               )}
             </div>

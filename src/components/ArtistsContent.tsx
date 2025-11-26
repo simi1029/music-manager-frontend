@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useMemo } from 'react'
-import { RATING_COLORS, RATING_BG } from '@/lib/rating'
+import { RATING_TEXT_COLORS, RATING_BG } from '@/lib/rating'
 import type { ArtistListItem } from '@/types/api'
 
 export function ArtistsContent({ artists }: { artists: ArtistListItem[] }) {
@@ -24,7 +24,7 @@ export function ArtistsContent({ artists }: { artists: ArtistListItem[] }) {
 function ArtistCard({ artist }: { artist: ArtistListItem }) {
   const { bgClass, textColor } = useMemo(() => {
     const bgClass = artist.rankValue > 0 ? RATING_BG[artist.rankValue] || 'bg-white' : 'bg-white'
-    const textColor = artist.rankValue > 0 ? RATING_COLORS[artist.rankValue] || 'text-gray-500' : 'text-gray-400'
+    const textColor = artist.rankValue > 0 ? RATING_TEXT_COLORS[artist.rankValue] || 'text-gray-900' : 'text-gray-900'
     return { bgClass, textColor }
   }, [artist.rankValue])
 

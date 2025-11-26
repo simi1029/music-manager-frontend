@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { calculateAlbumAverage } from '@/lib/rating'
+import { computeAlbumRating, quantizeRank, LABEL } from '@/lib/rating'
 import { extractTracks } from '@/lib/utils'
 import { AlbumCard } from '@/components/AlbumCard'
 import type { ArtistDetail } from '@/types/components'
@@ -80,7 +80,19 @@ export default async function ArtistPage({ params }: Props) {
         <div className="space-y-3">
           {artist.groups.map((album) => {
             const tracks = extractTracks(album)
-            const avgRank = calculateAlbumAverage(tracks)
+            const hasRatings = tracks.some(t => t.ratings && t.ratings.length > 0)
+            
+            const albumRating = hasRatings ? computeAlbumRating(
+              tracks.map(t => ({
+                durationSec: t.durationSec,
+                ratings: t.ratings || []
+              })),
+              {
+                cover: album.coverValue ?? undefined,
+                production: album.productionValue ?? undefined,
+                mix: album.mixValue ?? undefined
+              }
+            ) : null
             const coverUrl = album.covers && album.covers.length > 0 ? album.covers[0].url : null
 
             return (
@@ -91,7 +103,8 @@ export default async function ArtistPage({ params }: Props) {
                   title: album.title,
                   coverUrl,
                   tracksCount: tracks.length,
-                  rating: avgRank,
+                  rankValue: albumRating?.rankValue ?? null,
+                  rankLabel: albumRating?.rankLabel ?? '—',
                 }}
                 year={album.year}
                 primaryType={album.primaryType}
@@ -101,6 +114,7 @@ export default async function ArtistPage({ params }: Props) {
                 showType={true}
                 showTrackCount={true}
                 showRating={true}
+                showRatingAsLabel={true}
               />
             )
           })}

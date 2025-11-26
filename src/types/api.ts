@@ -7,7 +7,7 @@ export interface AlbumListItem {
   artist: string
   artistId: string | null
   tracksCount: number
-  albumRankValue: number
+  albumRankValue: number | null
   albumRankLabel: string
   coverUrl: string | null
 }
