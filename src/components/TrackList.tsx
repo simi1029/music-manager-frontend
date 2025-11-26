@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { TrackRating } from './TrackRating'
 import { useRouter } from 'next/navigation'
 import type { TrackWithRatings } from '@/types/components'
@@ -11,10 +12,10 @@ type TrackListProps = {
 export function TrackList({ tracks }: TrackListProps) {
   const router = useRouter()
 
-  const handleRatingChange = () => {
+  const handleRatingChange = useCallback(() => {
     // Refresh the page data to update album-level rating
     router.refresh()
-  }
+  }, [router])
 
   return (
     <ol className="mt-2 space-y-2">

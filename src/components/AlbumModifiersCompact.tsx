@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { quantizeRank, RATING_COLORS, RATING_BG } from '@/lib/rating'
 import { useToast } from '@/components/ui/toast'
@@ -31,15 +31,18 @@ export function AlbumModifiersCompact({
     production !== (initialProduction ?? 5) ||
     mix !== (initialMix ?? 5)
 
-  // Calculate quality boost
-  const coverBoost = cover - 5
-  const productionBoost = production - 5
-  const mixBoost = mix - 5
-  const totalBoost = coverBoost + productionBoost + mixBoost
-  const bonusMultiplier = (cover >= 9 && production >= 9 && mix >= 9) ? 1.05 : 1.0
-  const finalBoost = totalBoost * bonusMultiplier
+  // Calculate quality boost (memoized)
+  const { coverBoost, productionBoost, mixBoost, totalBoost, bonusMultiplier, finalBoost } = useMemo(() => {
+    const coverBoost = cover - 5
+    const productionBoost = production - 5
+    const mixBoost = mix - 5
+    const totalBoost = coverBoost + productionBoost + mixBoost
+    const bonusMultiplier = (cover >= 9 && production >= 9 && mix >= 9) ? 1.05 : 1.0
+    const finalBoost = totalBoost * bonusMultiplier
+    return { coverBoost, productionBoost, mixBoost, totalBoost, bonusMultiplier, finalBoost }
+  }, [cover, production, mix])
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setIsSubmitting(true)
     try {
       const res = await fetch('/api/album-modifiers', {
@@ -61,26 +64,26 @@ export function AlbumModifiersCompact({
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [albumId, cover, production, mix, router, showToast])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setCover(initialCover ?? 5)
     setProduction(initialProduction ?? 5)
     setMix(initialMix ?? 5)
     setIsExpanded(false)
-  }
+  }, [initialCover, initialProduction, initialMix])
 
-  const getColorForValue = (value: number) => {
+  const getColorForValue = useCallback((value: number) => {
     const quantized = quantizeRank(value)
     return {
       text: RATING_COLORS[quantized] || "text-gray-500",
       bg: RATING_BG[quantized] || "bg-gray-100"
     }
-  }
+  }, [])
 
-  const coverColors = getColorForValue(cover)
-  const productionColors = getColorForValue(production)
-  const mixColors = getColorForValue(mix)
+  const coverColors = useMemo(() => getColorForValue(cover), [cover, getColorForValue])
+  const productionColors = useMemo(() => getColorForValue(production), [production, getColorForValue])
+  const mixColors = useMemo(() => getColorForValue(mix), [mix, getColorForValue])
 
   const renderButtons = (value: number, setValue: (val: number) => void, colors: { text: string; bg: string }) => {
     return (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo, useMemo, useCallback } from 'react'
 import { RATING_COLORS, RATING_BG } from '@/lib/rating'
 import { useToast } from '@/components/ui/toast'
 
@@ -13,7 +13,7 @@ type TrackRatingProps = {
   onRatingChange?: () => void
 }
 
-export function TrackRating({ 
+export const TrackRating = memo(function TrackRating({ 
   trackId, 
   trackNumber, 
   trackTitle, 
@@ -26,7 +26,7 @@ export function TrackRating({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { showToast } = useToast()
 
-  const handleRating = async (score: number) => {
+  const handleRating = useCallback(async (score: number) => {
     setIsSubmitting(true)
     try {
       const res = await fetch('/api/ratings', {
@@ -43,9 +43,9 @@ export function TrackRating({
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [trackId, onRatingChange, showToast])
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     setIsSubmitting(true)
     try {
       const res = await fetch('/api/ratings', {
@@ -62,12 +62,14 @@ export function TrackRating({
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [trackId, onRatingChange, showToast])
 
   const displayRating = hover ?? rating
 
-  const minutes = Math.floor(durationSec / 60)
-  const seconds = durationSec % 60
+  const { minutes, seconds } = useMemo(() => ({
+    minutes: Math.floor(durationSec / 60),
+    seconds: durationSec % 60
+  }), [durationSec])
 
   return (
     <li className="flex justify-between items-center gap-4">
@@ -117,4 +119,4 @@ export function TrackRating({
       </div>
     </li>
   )
-}
+})
