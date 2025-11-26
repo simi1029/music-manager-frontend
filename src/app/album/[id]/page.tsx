@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { computeAlbumRating } from '@/lib/rating-album'
 import { TrackList } from '@/components/TrackList'
-import { AlbumModifiers } from '@/components/AlbumModifiers'
+import { AlbumModifiersCompact } from '@/components/AlbumModifiersCompact'
 import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
@@ -61,7 +61,7 @@ export default async function AlbumPage({ params }: Props) {
         />
       </div>
 
-      <AlbumModifiers
+      <AlbumModifiersCompact
         albumId={a.id}
         coverValue={a.coverValue}
         productionValue={a.productionValue}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { RATING_BG } from '@/lib/rating-colors'
 import { quantizeRank } from '@/lib/rating'
+import { AlbumsContent } from '@/components/AlbumsContent'
 
 async function getData() {
   // In server runtime a relative URL can fail to parse. Build an absolute base URL
@@ -16,36 +17,7 @@ export default async function AlbumsPage() {
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
       <h1 className="text-2xl font-semibold">Your Albums</h1>
-      <div className="space-y-3">
-        {albums.map((r: any) => {
-          const quantized = r.albumRankValue > 0 ? quantizeRank(r.albumRankValue) : 0
-          const bgClass = quantized > 0 ? RATING_BG[quantized] || 'bg-white' : 'bg-white'
-          return (
-            <div 
-              key={r.id}
-              className={`border rounded-lg p-4 transition-all ${bgClass} hover:shadow-md`}
-            >
-              <Link 
-                href={`/album/${r.id}`}
-                className="block cursor-pointer"
-              >
-                <div>
-                  <div className="font-medium">{r.title}</div>
-                  {r.artistId && (
-                    <Link 
-                      href={`/artist/${r.artistId}`}
-                      className="text-sm text-gray-500 hover:text-gray-700 hover:underline inline-block relative z-10"
-                    >
-                      {r.artist}
-                    </Link>
-                  )}
-                  <div className="text-sm mt-1">Tracks: {r.tracksCount}</div>
-                </div>
-              </Link>
-            </div>
-          )
-        })}
-      </div>
+      <AlbumsContent albums={albums} />
     </main>
   )
 }
