@@ -89,6 +89,7 @@ model Artist {
   sortName  String?
   country   String?
   notes     String?
+  imageUrl  String? // Artist photo/image URL
   groups    ReleaseGroup[] // albums by the artist (primary artist)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt

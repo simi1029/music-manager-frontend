@@ -32,6 +32,18 @@ export const RATING_BG: Record<number, string> = {
   10: "bg-violet-100"
 }
 
+// Text colors for readability on each rating background
+export const RATING_TEXT_COLORS: Record<number, string> = {
+  0: "text-red-900",      // Dark red on red-100
+  1: "text-orange-900",   // Dark orange on orange-100
+  2: "text-amber-900",    // Dark amber on amber-100
+  3: "text-yellow-900",   // Dark yellow on yellow-100
+  4: "text-lime-900",     // Dark lime on lime-100
+  5: "text-green-900",    // Dark green on green-100
+  7: "text-sky-900",      // Dark sky on sky-100
+  10: "text-violet-900"   // Dark violet on violet-100
+}
+
 // ─────────────────────────────────────────────────────────
 // Pure rating utilities
 // ─────────────────────────────────────────────────────────

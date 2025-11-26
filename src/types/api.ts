@@ -9,6 +9,7 @@ export interface AlbumListItem {
   tracksCount: number
   albumRankValue: number
   albumRankLabel: string
+  coverUrl: string | null
 }
 
 // GET /api/artists response
@@ -19,6 +20,7 @@ export interface ArtistListItem {
   albumCount: number
   ratedAlbumCount: number
   avgRating: number
+  imageUrl: string | null
 }
 
 // POST /api/ratings request

@@ -59,6 +59,7 @@ export interface ArtistDetailAlbum {
   productionValue: number | null
   mixValue: number | null
   releases: ArtistDetailAlbumRelease[]
+  covers: { url: string }[]
 }
 
 export interface ArtistDetail {
@@ -67,5 +68,6 @@ export interface ArtistDetail {
   sortName: string | null
   country: string | null
   notes: string | null
+  imageUrl: string | null
   groups: ArtistDetailAlbum[]
 }

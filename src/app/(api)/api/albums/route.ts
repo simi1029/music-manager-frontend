@@ -11,6 +11,7 @@ export async function GET() {
       artist: true,
       // include tracks and their ratings so we can compute album-level averages
       releases: { include: { tracks: { include: { ratings: true } } } },
+      covers: true, // Include covers to get album artwork
     },
     orderBy: { updatedAt: 'desc' },
     take: 50,
@@ -19,6 +20,9 @@ export async function GET() {
   const shaped: AlbumListItem[] = albums.map((a) => {
     const tracks = extractTracks(a)
     const avgRank = calculateAlbumAverage(tracks)
+    // Get the first cover URL if available
+    const coverUrl = a.covers && a.covers.length > 0 ? a.covers[0].url : null
+    
     return {
       id: a.id,
       title: a.title,
@@ -29,6 +33,7 @@ export async function GET() {
       // keep a 1-decimal numeric value for UI, and a human-friendly label
       albumRankValue: Math.round(avgRank * 10) / 10,
       albumRankLabel: avgRank > 0 ? LABEL[quantizeRank(avgRank)] : '—',
+      coverUrl,
     }
   })
 

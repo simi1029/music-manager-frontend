@@ -61,7 +61,8 @@ export async function GET() {
         country: artist.country,
         albumCount,
         ratedAlbumCount,
-        avgRating: Math.round(avgRating * 10) / 10 // Round to 1 decimal
+        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal
+        imageUrl: artist.imageUrl
       }
     })
 
