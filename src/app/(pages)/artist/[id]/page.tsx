@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getArtistWithAlbums } from '@/lib/queries/artists'
 import { calculateArtistAlbumRating } from '@/lib/transformers/artists'
-import { AlbumCard } from '@/components/AlbumCard'
+import { AlbumCard } from '@/components/albums'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 

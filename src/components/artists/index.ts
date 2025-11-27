@@ -1,0 +1,1 @@
+export { ArtistsContent } from './ArtistsContent'

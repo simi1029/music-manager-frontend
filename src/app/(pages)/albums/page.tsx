@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { RATING_BG, quantizeRank } from '@/lib/rating'
-import { AlbumsContent } from '@/components/AlbumsContent'
+import { AlbumsContent } from '@/components/albums'
 import { getBaseUrl } from '@/lib/utils'
 import type { AlbumListItem } from '@/types/api'
 

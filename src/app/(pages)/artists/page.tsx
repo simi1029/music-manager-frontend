@@ -1,4 +1,4 @@
-import { ArtistsContent } from '@/components/ArtistsContent'
+import { ArtistsContent } from '@/components/artists'
 import { getBaseUrl } from '@/lib/utils'
 import type { ArtistListItem } from '@/types/api'
 

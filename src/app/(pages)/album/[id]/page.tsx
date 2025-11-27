@@ -2,9 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getAlbumWithRatings } from '@/lib/queries/albums'
 import { transformAlbumFirstRelease } from '@/lib/transformers/albums'
-import { TrackList } from '@/components/TrackList'
-import { AlbumModifiersCompact } from '@/components/AlbumModifiersCompact'
-import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'
+import { TrackList } from '@/components/tracks'
+import { AlbumModifiersCompact, AlbumRatingDisplay } from '@/components/albums'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
 
