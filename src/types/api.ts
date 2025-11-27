@@ -1,11 +1,13 @@
-// API request and response types
+import { BaseAlbum, BaseArtist } from './entities'
+
+/**
+ * API request and response types
+ * These types extend base entities with API-specific fields
+ */
 
 // GET /api/albums response
-export interface AlbumListItem {
-  id: string
-  title: string
-  artist: string
-  artistId: string | null
+export interface AlbumListItem extends Pick<BaseAlbum, 'id' | 'title'> {
+  artist: BaseArtist // Changed from string to object for consistency
   tracksCount: number
   albumRankValue: number | null
   albumRankLabel: string
@@ -13,9 +15,7 @@ export interface AlbumListItem {
 }
 
 // GET /api/artists response
-export interface ArtistListItem {
-  id: string
-  name: string
+export interface ArtistListItem extends BaseArtist {
   country: string | null
   albumCount: number
   ratedAlbumCount: number

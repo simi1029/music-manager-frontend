@@ -21,8 +21,10 @@ export async function GET() {
       return {
         id: a.id,
         title: a.title,
-        artist: a.artist?.name ?? 'Unknown',
-        artistId: a.artist?.id,
+        artist: {
+          id: a.artist?.id ?? '',
+          name: a.artist?.name ?? 'Unknown',
+        },
         tracksCount: tracks.length,
         albumRankValue: quantized,
         albumRankLabel: quantized !== null ? LABEL[quantized] : '—',

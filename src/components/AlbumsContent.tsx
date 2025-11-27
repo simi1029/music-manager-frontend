@@ -17,14 +17,7 @@ export function AlbumsContent({ albums }: { albums: AlbumListItem[] }) {
             rankValue: album.albumRankValue,
             rankLabel: album.albumRankLabel,
           }}
-          artist={
-            album.artistId
-              ? {
-                  id: album.artistId,
-                  name: album.artist,
-                }
-              : undefined
-          }
+          artist={album.artist}
           coverSize="md"
           showArtist={true}
           showTrackCount={true}

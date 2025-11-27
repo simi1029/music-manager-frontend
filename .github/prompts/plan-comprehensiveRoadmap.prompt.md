@@ -31,6 +31,10 @@
   - Reusable AlbumCard component with variant system
   - Performance optimizations (React.memo, useMemo, useCallback)
   - Clickable card patterns with accessibility
+- **UI/UX Polish** (November 27, 2025 ✅ COMPLETED)
+  - Fixed AlbumCard metadata separator bug (no orphaned dots)
+  - Musical note icon for track counts (cleaner visual design)
+  - Proper display for albums with 0 tracks
 
 ### 🚧 In Progress
 - None - ready for Phase 2 (MusicBrainz Import)
