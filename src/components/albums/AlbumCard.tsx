@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { memo, useMemo } from 'react'
 import { RATING_BG, RATING_TEXT_COLORS, quantizeRank } from '@/lib/rating'
+import { RatingBadge } from './RatingBadge'
 
 export interface AlbumCardProps {
   // Required data
@@ -199,15 +200,14 @@ export const AlbumCard = memo(function AlbumCard({
           {/* Rating */}
           {showRating && quantized !== null && (
             <div className="text-right ml-4 flex-shrink-0">
-              {showRatingAsLabel && album.rankLabel ? (
-                <div className={`text-lg font-bold ${textColor}`}>
-                  {album.rankLabel}
-                </div>
-              ) : (
-                <div className={`text-lg font-medium ${textColor}`}>
-                  {quantized}/10
-                </div>
-              )}
+              <RatingBadge
+                rankValue={album.rankValue}
+                rankLabel={album.rankLabel}
+                variant="album"
+                display={showRatingAsLabel ? 'label' : 'numeric'}
+                size="md"
+                showBackground={false}
+              />
             </div>
           )}
         </div>

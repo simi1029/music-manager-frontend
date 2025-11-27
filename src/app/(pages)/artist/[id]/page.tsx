@@ -81,7 +81,7 @@ export default async function ArtistPage({ params }: Props) {
                   coverUrl,
                   tracksCount: tracks.length,
                   rankValue: albumRating.rankValue > 0 ? albumRating.rankValue : null,
-                  rankLabel: albumRating.rankValue > 0 ? undefined : '—',
+                  rankLabel: albumRating.rankLabel,
                 }}
                 year={album.year}
                 primaryType={album.primaryType}

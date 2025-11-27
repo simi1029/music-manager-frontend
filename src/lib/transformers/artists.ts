@@ -4,7 +4,7 @@
  * with calculated ratings and statistics.
  */
 
-import { computeAlbumRating, computeArtistRating } from '@/lib/rating'
+import { computeAlbumRating, computeArtistRating, quantizeRank, LABEL } from '@/lib/rating'
 
 /**
  * Track data structure for rating calculations
@@ -63,20 +63,21 @@ export interface ArtistWithRatings {
 
 /**
  * Calculate album rating for a single album within an artist
- * Handles the hasRatings check and returns proper structure
+ * Handles the hasRatings check and returns proper structure with label
  */
 export function calculateArtistAlbumRating(album: ArtistAlbum): {
   rankValue: number
+  rankLabel: string
   finalAlbumRating: number
 } {
   const tracks = album.releases.flatMap(r => r.tracks)
   const hasRatings = tracks.some(t => t.ratings && t.ratings.length > 0)
   
   if (!hasRatings) {
-    return { rankValue: 0, finalAlbumRating: 0 }
+    return { rankValue: 0, rankLabel: '—', finalAlbumRating: 0 }
   }
   
-  return computeAlbumRating(
+  const rating = computeAlbumRating(
     tracks.map(t => ({
       durationSec: t.durationSec,
       ratings: t.ratings || []
@@ -87,6 +88,16 @@ export function calculateArtistAlbumRating(album: ArtistAlbum): {
       mix: album.mixValue ?? undefined
     }
   )
+  
+  // Add the label based on quantized rank value
+  const quantized = quantizeRank(rating.rankValue)
+  const rankLabel = LABEL[quantized]
+  
+  return {
+    rankValue: rating.rankValue,
+    rankLabel,
+    finalAlbumRating: rating.finalAlbumRating
+  }
 }
 
 /**
