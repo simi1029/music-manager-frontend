@@ -79,16 +79,22 @@ export function hasAlbumRatings(tracks: PrismaTrackWithRatings[]): boolean {
 
 /**
  * Transform a Prisma album with releases into an album with calculated rating
- * Centralizes the hasRatings check and rating calculation logic
+ * Uses only the first release (assumes single release per album)
  */
 export function transformAlbumWithRating(album: PrismaAlbumWithReleases): AlbumWithRating {
-  // Extract all tracks from all releases
-  const tracks = album.releases.flatMap(r => r.tracks)
+  // Get tracks from first release only (single release assumption)
+  const rawTracks = album.releases[0]?.tracks ?? []
+  
+  // Normalize tracks to ensure ratings is always an array
+  const tracks = rawTracks.map(t => ({
+    ...t,
+    ratings: t.ratings || []
+  }))
   
   // Check if album has any ratings
   const hasRatings = hasAlbumRatings(tracks)
   
-  // Calculate album rating (returns 0 values if no ratings)
+  // Calculate album rating (returns null values if no ratings)
   const rating = hasRatings 
     ? computeAlbumRating(
         tracks.map(t => ({
