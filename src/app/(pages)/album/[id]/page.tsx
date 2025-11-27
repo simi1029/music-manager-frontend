@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { computeAlbumRating } from '@/lib/rating'
 import { getAlbumWithRatings } from '@/lib/queries/albums'
+import { transformAlbumFirstRelease } from '@/lib/transformers/albums'
 import { TrackList } from '@/components/TrackList'
 import { AlbumModifiersCompact } from '@/components/AlbumModifiersCompact'
 import { AlbumRatingDisplay } from '@/components/AlbumRatingDisplay'
@@ -18,22 +18,8 @@ export default async function AlbumPage({ params }: Props) {
 
   if (!a) return notFound()
 
-  // For now, always use the first release (edition)
-  const tracks = a.releases[0]?.tracks ?? []
-  
-  const hasAnyRatings = tracks.some((t) => t.ratings && t.ratings.length > 0)
-  
-  const albumRating = computeAlbumRating(
-    tracks.map((t) => ({
-      durationSec: t.durationSec,
-      ratings: t.ratings || []
-    })),
-    {
-      cover: a.coverValue ?? undefined,
-      production: a.productionValue ?? undefined,
-      mix: a.mixValue ?? undefined
-    }
-  )
+  // Use transformation layer to get tracks and rating
+  const { album, tracks, hasRatings, rating: albumRating } = transformAlbumFirstRelease(a)
 
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
@@ -61,12 +47,12 @@ export default async function AlbumPage({ params }: Props) {
         <div className="flex-1 space-y-4 h-48 overflow-visible">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold">{a.title}</h1>
+              <h1 className="text-2xl font-semibold">{album.title}</h1>
               <Link 
-                href={`/artist/${a.artist?.id}`}
+                href={`/artist/${album.artist?.id}`}
                 className="text-sm text-gray-500 hover:text-gray-700 hover:underline"
               >
-                {a.artist?.name ?? 'Unknown'}
+                {album.artist?.name ?? 'Unknown'}
               </Link>
               <div className="text-sm mt-1 text-gray-600">Tracks: {tracks.length}</div>
             </div>
@@ -74,15 +60,15 @@ export default async function AlbumPage({ params }: Props) {
               rankValue={albumRating.rankValue}
               rankLabel={albumRating.rankLabel}
               finalAlbumRating={albumRating.finalAlbumRating}
-              hasAnyRatings={hasAnyRatings}
+              hasAnyRatings={hasRatings}
             />
           </div>
           
           <AlbumModifiersCompact
-            albumId={a.id}
-            coverValue={a.coverValue}
-            productionValue={a.productionValue}
-            mixValue={a.mixValue}
+            albumId={album.id}
+            coverValue={album.coverValue}
+            productionValue={album.productionValue}
+            mixValue={album.mixValue}
           />
         </div>
       </div>

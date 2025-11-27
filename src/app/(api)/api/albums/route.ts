@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { quantizeRank, LABEL, calculateAlbumAverage } from '@/lib/rating'
-import { extractTracks } from '@/lib/utils'
+import { quantizeRank, LABEL } from '@/lib/rating'
 import { getAlbumsList } from '@/lib/queries/albums'
 import { withErrorHandler } from '@/lib/apiHelpers'
+import { transformAlbumWithRating } from '@/lib/transformers/albums'
 import type { AlbumListItem } from '@/types/api'
 
 export async function GET() {
@@ -11,12 +11,9 @@ export async function GET() {
     const albums = await getAlbumsList()
 
     const shaped: AlbumListItem[] = albums.map((a) => {
-      const tracks = extractTracks(a)
-      const hasRatings = tracks.some(t => t.ratings && t.ratings.length > 0)
-      const avgRank = hasRatings ? calculateAlbumAverage(tracks) : null
-      const quantized = avgRank !== null ? quantizeRank(avgRank) : null
-      // Get the first cover URL if available
-      const coverUrl = a.covers && a.covers.length > 0 ? a.covers[0].url : null
+      // Use transformation layer to calculate rating
+      const transformed = transformAlbumWithRating(a)
+      const quantized = transformed.rating.rankValue !== null ? quantizeRank(transformed.rating.rankValue) : null
       
       return {
         id: a.id,
@@ -25,10 +22,10 @@ export async function GET() {
           id: a.artist?.id ?? '',
           name: a.artist?.name ?? 'Unknown',
         },
-        tracksCount: tracks.length,
+        tracksCount: transformed.tracks.length,
         albumRankValue: quantized,
         albumRankLabel: quantized !== null ? LABEL[quantized] : '—',
-        coverUrl,
+        coverUrl: transformed.coverUrl,
       }
     })
 

@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { computeAlbumRating, quantizeRank, LABEL } from '@/lib/rating'
-import { extractTracks } from '@/lib/utils'
 import { getArtistWithAlbums } from '@/lib/queries/artists'
+import { calculateArtistAlbumRating } from '@/lib/transformers/artists'
 import { AlbumCard } from '@/components/AlbumCard'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
@@ -68,20 +67,9 @@ export default async function ArtistPage({ params }: Props) {
         <h2 className="text-lg font-medium mb-3">Albums ({artist.groups.length})</h2>
         <div className="space-y-3">
           {artist.groups.map((album) => {
-            const tracks = extractTracks(album)
-            const hasRatings = tracks.some(t => t.ratings && t.ratings.length > 0)
-            
-            const albumRating = hasRatings ? computeAlbumRating(
-              tracks.map(t => ({
-                durationSec: t.durationSec,
-                ratings: t.ratings || []
-              })),
-              {
-                cover: album.coverValue ?? undefined,
-                production: album.productionValue ?? undefined,
-                mix: album.mixValue ?? undefined
-              }
-            ) : null
+            // Use transformation layer to calculate album rating
+            const albumRating = calculateArtistAlbumRating(album)
+            const tracks = album.releases.flatMap(r => r.tracks)
             const coverUrl = album.covers && album.covers.length > 0 ? album.covers[0].url : null
 
             return (
@@ -92,8 +80,8 @@ export default async function ArtistPage({ params }: Props) {
                   title: album.title,
                   coverUrl,
                   tracksCount: tracks.length,
-                  rankValue: albumRating?.rankValue ?? null,
-                  rankLabel: albumRating?.rankLabel ?? '—',
+                  rankValue: albumRating.rankValue > 0 ? albumRating.rankValue : null,
+                  rankLabel: albumRating.rankValue > 0 ? undefined : '—',
                 }}
                 year={album.year}
                 primaryType={album.primaryType}
