@@ -24,6 +24,23 @@ const MBArtistCreditItemSchema = z.object({
 // Array of artist credits
 export const MBArtistCreditSchema = z.array(MBArtistCreditItemSchema)
 
+// Artist Search Result
+export const MBArtistSearchResultSchema = z.object({
+  id: z.string(),                    // Artist MBID
+  name: z.string(),                  // Artist name
+  'sort-name': z.string().optional(),
+  type: z.string().optional(),       // Person, Group, etc.
+  disambiguation: z.string().optional(),
+  score: z.number().optional(),      // Search relevance score
+}).passthrough()
+
+// Artist Search Response
+export const MBArtistSearchResponseSchema = z.object({
+  artists: z.array(MBArtistSearchResultSchema),
+  count: z.number(),
+  offset: z.number(),
+}).passthrough()
+
 // Search Result Item
 export const MBSearchResultSchema = z.object({
   id: z.string(),                          // Release Group MBID (required)
@@ -122,6 +139,8 @@ export const MBReleaseSchema = z.object({
 }).passthrough()
 
 // TypeScript types derived from schemas
+export type MBArtistSearchResponse = z.infer<typeof MBArtistSearchResponseSchema>
+export type MBArtistSearchResult = z.infer<typeof MBArtistSearchResultSchema>
 export type MBSearchResponse = z.infer<typeof MBSearchResponseSchema>
 export type MBSearchResult = z.infer<typeof MBSearchResultSchema>
 export type MBReleaseGroup = z.infer<typeof MBReleaseGroupSchema>

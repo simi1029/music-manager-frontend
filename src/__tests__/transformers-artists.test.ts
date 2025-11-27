@@ -28,6 +28,30 @@ vi.mock('../lib/rating', () => ({
       qualityBoost: 1.05
     }
   }),
+  quantizeRank: vi.fn((value) => {
+    // Mimic the real quantizeRank behavior - map to nearest SCALE value
+    const SCALE = [0, 1, 2, 3, 4, 5, 7, 10]
+    let best = 0
+    let bestDiff = Infinity
+    for (const s of SCALE) {
+      const d = Math.abs(value - s)
+      if (d < bestDiff || (d === bestDiff && s > best)) {
+        best = s
+        bestDiff = d
+      }
+    }
+    return best
+  }),
+  LABEL: {
+    0: 'Poor',
+    1: 'Fair',
+    2: 'Quite good',
+    3: 'Good',
+    4: 'More than good',
+    5: 'Very good',
+    7: 'Excellent',
+    10: 'Masterpiece'
+  },
   computeArtistRating: vi.fn((albumRatings) => {
     const ratedAlbums = albumRatings.filter((a: any) => a.rankValue > 0)
     if (ratedAlbums.length === 0) {
@@ -482,7 +506,7 @@ describe('calculateArtistAlbumRating - modifier values', () => {
         mix: undefined
       }
     )
-    expect(result).toEqual({ rankValue: 8, rankLabel: 'Excellent', finalAlbumRating: 8.0, baseRating: 7.6, qualityBoost: 1.05 })
+    expect(result).toEqual({ rankValue: 8, rankLabel: 'Excellent', finalAlbumRating: 8.0 })
   })
 
   it('should handle albums with modifier values', () => {
@@ -517,7 +541,7 @@ describe('calculateArtistAlbumRating - modifier values', () => {
         mix: 7
       }
     )
-    expect(result).toEqual({ rankValue: 8, rankLabel: 'Excellent', finalAlbumRating: 8.5, baseRating: 8.0, qualityBoost: 1.06 })
+    expect(result).toEqual({ rankValue: 8, rankLabel: 'Excellent', finalAlbumRating: 8.5 })
   })
 
   it('should handle albums with mixed modifier values', () => {
@@ -600,7 +624,7 @@ describe('calculateArtistAlbumRating - modifier values', () => {
       expect.any(Array),
       { cover: undefined, production: undefined, mix: undefined }
     )
-    expect(result1).toEqual({ rankValue: 8, rankLabel: 'Excellent', finalAlbumRating: 8.5, baseRating: 8.0, qualityBoost: 1.06 })
-    expect(result2).toEqual({ rankValue: 7, rankLabel: 'Excellent', finalAlbumRating: 7.0, baseRating: 6.7, qualityBoost: 1.04 })
+    expect(result1).toEqual({ rankValue: 8, rankLabel: 'Excellent', finalAlbumRating: 8.5 })
+    expect(result2).toEqual({ rankValue: 7, rankLabel: 'Excellent', finalAlbumRating: 7.0 })
   })
 })
