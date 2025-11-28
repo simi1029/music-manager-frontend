@@ -10,9 +10,11 @@ vi.mock('next-auth', () => ({
 
 // Mock MusicBrainzClient
 const mockGetRelease = vi.fn()
+const mockGetArtist = vi.fn()
 vi.mock('@/lib/musicbrainz', () => {
   class MockMusicBrainzClient {
     getRelease = mockGetRelease
+    getArtist = mockGetArtist
   }
   
   return {
@@ -23,6 +25,9 @@ vi.mock('@/lib/musicbrainz', () => {
 // Mock schemas
 vi.mock('@/lib/schemas/musicbrainz', () => ({
   MBReleaseSchema: {
+    parse: vi.fn(data => data)
+  },
+  MBArtistSchema: {
     parse: vi.fn(data => data)
   },
   extractArtists: vi.fn((artistCredit) => [
@@ -60,6 +65,8 @@ describe('POST /api/musicbrainz/import', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
+    // By default, mockGetArtist will not be called, but if called, return nothing
+    mockGetArtist.mockResolvedValue(undefined)
   })
 
   it('should return 401 when user is not authenticated', async () => {
@@ -672,7 +679,7 @@ describe('POST /api/musicbrainz/import', () => {
 
     expect(response.status).toBe(500)
     expect(data.error).toBe('IMPORT_ERROR')
-    expect(data.message).toBe('Failed to import album')
+    expect(data.message).toBe('Failed to import album: Network error')
   })
 })
 

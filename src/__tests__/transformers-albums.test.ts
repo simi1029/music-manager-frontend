@@ -65,7 +65,7 @@ describe('transformAlbumWithRating', () => {
     coverValue: 8,
     productionValue: 9,
     mixValue: 7,
-    artist: { id: 'artist1', name: 'Test Artist' },
+    artists: [{ artist: { id: 'artist1', name: 'Test Artist' } }],
     releases: [
       {
         tracks: [
@@ -130,6 +130,26 @@ describe('transformAlbumWithRating', () => {
     const result = transformAlbumWithRating(noCoverAlbum)
 
     expect(result.coverUrl).toBe(null)
+  })
+
+  it('should handle tracks with undefined ratings property when calculating rating', () => {
+    const albumWithUndefinedRatings: PrismaAlbumWithReleases = {
+      ...baseAlbum,
+      releases: [
+        {
+          tracks: [
+            { id: 't1', number: 1, title: 'Track 1', durationSec: 180 } as any,
+            { id: 't2', number: 2, title: 'Track 2', durationSec: 200, ratings: [{ score: 8 }] }
+          ]
+        }
+      ]
+    }
+
+    const result = transformAlbumWithRating(albumWithUndefinedRatings)
+
+    // Should successfully compute rating even with mixed undefined/defined ratings
+    expect(result.hasRatings).toBe(true)
+    expect(result.rating).toBeDefined()
   })
 
   it('should use tracks from first release only', () => {
@@ -212,7 +232,7 @@ describe('transformAlbumFirstRelease', () => {
     coverValue: 8,
     productionValue: 9,
     mixValue: 7,
-    artist: { id: 'artist1', name: 'Test Artist' },
+    artists: [{ artist: { id: 'artist1', name: 'Test Artist' } }],
     releases: [
       {
         tracks: [
@@ -366,10 +386,10 @@ describe('transformAlbumFirstRelease - modifier values', () => {
       coverValue: null,
       productionValue: null,
       mixValue: null,
-      artist: {
+      artists: [{
         id: 'artist1',
         name: 'Test Artist'
-      },
+      }],
       releases: [
         {
           year: 2023,
@@ -422,10 +442,12 @@ describe('transformAlbumFirstRelease - modifier values', () => {
       coverValue: 8,
       productionValue: 9,
       mixValue: 7,
-      artist: {
-        id: 'artist1',
-        name: 'Test Artist'
-      },
+      artists: [{
+        artist: {
+          id: 'artist1',
+          name: 'Test Artist'
+        }
+      }],
       releases: [
         {
           year: 2023,

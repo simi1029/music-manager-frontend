@@ -330,3 +330,65 @@ describe('buildSearchQuery helper', () => {
     expect(query).toBe('')
   })
 })
+
+describe('getArtist', () => {
+  let client: MusicBrainzClient
+  
+  beforeEach(() => {
+    client = new MusicBrainzClient()
+    vi.clearAllMocks()
+  })
+
+  it('should fetch artist details by ID', async () => {
+    const mockArtist = {
+      id: '5b11f4ce-a62d-471e-81fc-a69a8278c7da',
+      name: 'Nirvana',
+      country: 'US',
+      'sort-name': 'Nirvana'
+    }
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => mockArtist
+    } as Response)
+
+    const result = await client.getArtist('5b11f4ce-a62d-471e-81fc-a69a8278c7da')
+
+    expect(result).toEqual(mockArtist)
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('artist/5b11f4ce-a62d-471e-81fc-a69a8278c7da'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'User-Agent': expect.any(String)
+        })
+      })
+    )
+  })
+
+  it('should include fmt=json parameter', async () => {
+    const mockArtist = { id: 'test', name: 'Test Artist' }
+
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => mockArtist
+    } as Response)
+
+    await client.getArtist('test-id')
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('fmt=json'),
+      expect.any(Object)
+    )
+  })
+
+  it('should throw MusicBrainzError on failed request', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: async () => 'Artist not found'
+    } as Response)
+
+    await expect(client.getArtist('invalid-id')).rejects.toThrow(MusicBrainzError)
+  })
+})

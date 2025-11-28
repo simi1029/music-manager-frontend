@@ -313,6 +313,7 @@ describe('getAlbumWithRatings', () => {
       coverValue: 8,
       productionValue: 9,
       mixValue: 7,
+      artists: [],
       artist: {
         id: 'artist1',
         name: 'Test Artist'

@@ -195,6 +195,7 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
         name: 'David Bowie',
         sortName: 'Bowie, David',
         musicbrainzId: 'mbid-bowie',
+        country: null,
       },
     })
     expect(prisma.artist.create).toHaveBeenCalledWith({
@@ -202,6 +203,7 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
         name: 'Queen',
         sortName: 'Queen',
         musicbrainzId: 'mbid-queen',
+        country: null,
       },
     })
 

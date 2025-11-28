@@ -149,6 +149,26 @@ describe('calculateArtistAlbumRating', () => {
     expect(result.finalAlbumRating).toBe(0)
   })
 
+  it('should handle mixed tracks with some undefined ratings when computing rating', () => {
+    const mixedRatingsAlbum: ArtistAlbum = {
+      ...baseAlbum,
+      releases: [
+        {
+          tracks: [
+            { id: 't1', number: 1, title: 'Track 1', durationSec: 180 } as any,
+            { id: 't2', number: 2, title: 'Track 2', durationSec: 200, ratings: [{ score: 8 }] }
+          ]
+        }
+      ]
+    }
+
+    const result = calculateArtistAlbumRating(mixedRatingsAlbum)
+
+    // Should successfully compute rating with mixed undefined/defined ratings
+    expect(result).toBeDefined()
+    expect(result.rankValue).toBeGreaterThan(0)
+  })
+
   it('should flatten tracks from multiple releases', () => {
     const multiReleaseAlbum: ArtistAlbum = {
       ...baseAlbum,
