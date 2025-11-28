@@ -209,7 +209,6 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
     expect(prisma.releaseGroup.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          artistCredit: 'David Bowie & Queen',
           artists: {
             create: [
               {
@@ -427,7 +426,6 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
     expect(prisma.releaseGroup.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          artistCredit: 'Artist One feat. Artist Two & Artist Three',
           artists: {
             create: [
               { artistId: 'a1', position: 0, joinPhrase: ' feat. ' },

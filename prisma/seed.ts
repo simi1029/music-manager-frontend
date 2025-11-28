@@ -16,7 +16,6 @@ async function main() {
       title: 'Example Album 1',
       primaryType: 'ALBUM',
       year: 2018,
-      artistCredit: artist1.name,
       artists: {
         create: {
           artistId: artist1.id,
@@ -32,7 +31,6 @@ async function main() {
       title: 'Example Album 2',
       primaryType: 'ALBUM',
       year: 2025,
-      artistCredit: artist2.name,
       artists: {
         create: {
           artistId: artist2.id,

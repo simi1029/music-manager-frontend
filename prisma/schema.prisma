@@ -115,7 +115,6 @@ model ReleaseGroup {
   soloist         String? // e.g., "Martha Argerich"
   // Relations
   musicbrainzId   String?               @unique // MusicBrainz release-group ID for duplicate prevention
-  artistCredit    String? // Formatted artist credit (e.g., "David Bowie & Queen")
   artists         ReleaseGroupArtist[] // many-to-many relation for all contributing artists
   releases        Release[]
   genres          ReleaseGroupGenre[]

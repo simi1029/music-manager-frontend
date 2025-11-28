@@ -9,7 +9,6 @@ export interface BaseAlbum {
   title: string
   year: number | null
   primaryType: string
-  artistCredit: string | null
   coverValue: number | null
   productionValue: number | null
   mixValue: number | null

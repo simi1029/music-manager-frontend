@@ -25,7 +25,7 @@ export async function GET() {
         title: a.title,
         artist: artists.length > 0 ? {
           id: artists[0].id,
-          name: a.artistCredit || artists.map(art => art.name).join(' & '),
+          name: artists.map(art => art.name).join(' & '),
         } : {
           id: '',
           name: 'Unknown'

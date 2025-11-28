@@ -112,16 +112,6 @@ export async function POST(request: NextRequest) {
       })
     )
 
-    // Build formatted artist credit string (e.g., "David Bowie & Queen")
-    const artistCredit = artistCredits
-      .map((ac) => {
-        const artistName = ac.artist?.name || ''
-        const joinPhrase = ac.joinphrase || ''
-        return artistName + joinPhrase
-      })
-      .join('')
-      .trim()
-
     // Extract just the artist records for backward compatibility
     const artistRecords = artistRecordsWithJoin.map(ar => ar.artist)
 
@@ -160,7 +150,6 @@ export async function POST(request: NextRequest) {
         year,
         primaryType: albumType,
         musicbrainzId: releaseGroupId, // Store MusicBrainz ID for duplicate prevention
-        artistCredit, // Store formatted artist credit
         artists: {
           create: artistRecordsWithJoin.map((ar, position) => ({
             artistId: ar.artist.id,

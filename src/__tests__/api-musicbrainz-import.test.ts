@@ -131,7 +131,6 @@ describe('POST /api/musicbrainz/import', () => {
       conductor: null,
       soloist: null,
       musicbrainzId: 'rg-456',
-      artistCredit: 'Test Artist',
       coverValue: null,
       productionValue: null,
       mixValue: null,
