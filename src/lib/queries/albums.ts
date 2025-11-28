@@ -10,6 +10,12 @@ import { prisma } from '@/lib/db'
  */
 export const albumInclude = {
   artist: true,
+  artists: {
+    include: { 
+      artist: true 
+    },
+    orderBy: { position: 'asc' as const }
+  },
   releases: { 
     include: { 
       tracks: { 

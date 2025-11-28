@@ -9,6 +9,7 @@ export interface BaseAlbum {
   title: string
   year: number | null
   primaryType: string
+  artistCredit: string | null
   coverValue: number | null
   productionValue: number | null
   mixValue: number | null
@@ -17,6 +18,7 @@ export interface BaseAlbum {
 export interface BaseArtist {
   id: string
   name: string
+  musicbrainzId?: string | null
 }
 
 export interface BaseTrack {
@@ -48,4 +50,16 @@ export interface ArtistWithDetails extends BaseArtist {
 
 export interface TrackWithDuration extends BaseTrack {
   durationMs: number | null
+}
+
+// Multi-artist support
+export interface ArtistCredit {
+  position: number
+  joinPhrase: string | null
+  artist: BaseArtist
+}
+
+export interface AlbumWithArtists extends BaseAlbum {
+  artist: BaseArtist
+  artists: ArtistCredit[]
 }

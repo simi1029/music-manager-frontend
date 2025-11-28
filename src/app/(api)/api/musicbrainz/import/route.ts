@@ -62,32 +62,73 @@ export async function POST(request: NextRequest) {
     // Validate response
     const release = MBReleaseSchema.parse(releaseData)
 
-    // Extract artists
-    const artists = extractArtists(release['artist-credit'])
+    // Extract artists from artist-credit with join phrases
+    const artistCredits = release['artist-credit'] || []
     
-    // Get or create artists
-    const artistRecords = await Promise.all(
-      artists.map(async (artist) => {
-        // Check if artist exists by name
-        let artistRecord = await prisma.artist.findFirst({
-          where: {
-            name: artist.name,
-          },
-        })
+    // Get or create artists with MusicBrainz ID matching
+    const artistRecordsWithJoin = await Promise.all(
+      artistCredits.map(async (ac) => {
+        const artist = ac.artist
+        if (!artist) {
+          throw new Error('Artist data missing in artist-credit')
+        }
 
-        if (!artistRecord) {
-          // Create new artist
-          artistRecord = await prisma.artist.create({
-            data: {
-              name: artist.name,
-              sortName: artist.sortName,
-            },
+        let artistRecord = null
+
+        // 1. Try matching by MusicBrainz ID first (most accurate)
+        if (artist.id) {
+          artistRecord = await prisma.artist.findUnique({
+            where: { musicbrainzId: artist.id }
           })
         }
 
-        return artistRecord
+        // 2. Fallback to name matching (case-insensitive)
+        if (!artistRecord) {
+          artistRecord = await prisma.artist.findFirst({
+            where: {
+              name: { equals: artist.name, mode: 'insensitive' }
+            }
+          })
+
+          // If found by name but missing MBID, update it
+          if (artistRecord && !artistRecord.musicbrainzId && artist.id) {
+            artistRecord = await prisma.artist.update({
+              where: { id: artistRecord.id },
+              data: { musicbrainzId: artist.id }
+            })
+          }
+        }
+
+        // 3. Create new artist if not found
+        if (!artistRecord) {
+          artistRecord = await prisma.artist.create({
+            data: {
+              name: artist.name,
+              sortName: artist['sort-name'] || null,
+              musicbrainzId: artist.id || null,
+            }
+          })
+        }
+
+        return {
+          artist: artistRecord,
+          joinPhrase: ac.joinphrase || ''
+        }
       })
     )
+
+    // Build formatted artist credit string (e.g., "David Bowie & Queen")
+    const artistCredit = artistCredits
+      .map((ac) => {
+        const artistName = ac.artist?.name || ''
+        const joinPhrase = ac.joinphrase || ''
+        return artistName + joinPhrase
+      })
+      .join('')
+      .trim()
+
+    // Extract just the artist records for backward compatibility
+    const artistRecords = artistRecordsWithJoin.map(ar => ar.artist)
 
     // Extract album info
     const albumTitle = release.title
@@ -117,13 +158,21 @@ export async function POST(request: NextRequest) {
       warnings.push(`${tracksWithNullDuration.length} track(s) missing duration data`)
     }
 
-    // Create ReleaseGroup (album) with Release and tracks
+    // Create ReleaseGroup (album) with Release, tracks, and multi-artist support
     const releaseGroup = await prisma.releaseGroup.create({
       data: {
         title: albumTitle,
         year,
         primaryType: albumType,
         artistId: artistRecords[0].id, // Use first artist as primary
+        artistCredit, // Store formatted artist credit
+        artists: {
+          create: artistRecordsWithJoin.map((ar, position) => ({
+            artistId: ar.artist.id,
+            position,
+            joinPhrase: ar.joinPhrase || null
+          }))
+        },
         external: {
           create: {
             musicbrainzId: releaseGroupId,

@@ -84,27 +84,30 @@ model User {
 
 // ---- Core catalog (MusicBrainz-style)
 model Artist {
-  id        String         @id @default(cuid())
-  name      String
-  sortName  String?
-  country   String?
-  notes     String?
-  imageUrl  String? // Artist photo/image URL
-  groups    ReleaseGroup[] // albums by the artist (primary artist)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id                  String                @id @default(cuid())
+  name                String
+  sortName            String?
+  country             String?
+  notes               String?
+  imageUrl            String? // Artist photo/image URL
+  musicbrainzId       String?               @unique // MusicBrainz artist ID for matching
+  groups              ReleaseGroup[] // albums by the artist (primary artist)
+  releaseGroupArtists ReleaseGroupArtist[] // many-to-many relation for collaborations
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 
   @@index([name])
   @@index([sortName])
+  @@index([musicbrainzId])
 }
 
 model ReleaseGroup {
-  id              String              @id @default(cuid())
+  id              String                @id @default(cuid())
   title           String
   primaryType     PrimaryType
   year            Int?
   // Classical fields (at album/work level)
-  isClassical     Boolean             @default(false)
+  isClassical     Boolean               @default(false)
   composer        String? // e.g., "Johann Sebastian Bach"
   work            String? // e.g., "Mass in B Minor"
   movement        String? // optional single-string for MVP
@@ -113,7 +116,9 @@ model ReleaseGroup {
   soloist         String? // e.g., "Martha Argerich"
   // Relations
   artistId        String
-  artist          Artist              @relation(fields: [artistId], references: [id])
+  artist          Artist                @relation(fields: [artistId], references: [id])
+  artistCredit    String? // Formatted artist credit (e.g., "David Bowie & Queen")
+  artists         ReleaseGroupArtist[] // many-to-many relation for all contributing artists
   releases        Release[]
   genres          ReleaseGroupGenre[]
   covers          Cover[]
@@ -122,8 +127,8 @@ model ReleaseGroup {
   coverValue      Int?
   productionValue Int?
   mixValue        Int?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
   // Prevent duplicates: artist + title + year unique (your rule)
   @@unique([artistId, title, year])
@@ -244,4 +249,19 @@ model ExternalRef {
   spotifyUrl     String?
   bandcampUrl    String?
   releaseGroup   ReleaseGroup @relation(fields: [releaseGroupId], references: [id])
+}
+
+// ---- Multi-Artist Support
+model ReleaseGroupArtist {
+  releaseGroupId String
+  artistId       String
+  position       Int    // Order in artist credit (0, 1, 2...)
+  joinPhrase     String? // " & " or " feat. " etc.
+
+  releaseGroup ReleaseGroup @relation(fields: [releaseGroupId], references: [id], onDelete: Cascade)
+  artist       Artist       @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@id([releaseGroupId, artistId, position])
+  @@index([releaseGroupId])
+  @@index([artistId])
 }

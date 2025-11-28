@@ -168,7 +168,7 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 
 **Decisions Made:**
 
-1. ✅ **Multi-Artist Albums:** Proper many-to-many implementation
+1. ✅ **Multi-Artist Albums:** Proper many-to-many implementation ✅ **IMPLEMENTED**
    - `ReleaseGroupArtist` junction table
    - `Artist.musicbrainzId` field for matching
    - Primary artist in `ReleaseGroup.artistId`
@@ -176,11 +176,12 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
    - Formatted credit stored in `ReleaseGroup.artistCredit`
    - Collaborations will appear on artist pages
 
-2. ✅ **Artist Matching:** Fuzzy matching (Option B)
-   - First: Match by MusicBrainz ID
-   - Second: Check name variations ("The Beatles" vs "Beatles")
-   - Case-insensitive matching
-   - Update existing artists with MBID if missing
+2. ✅ **Artist Matching:** Three-tier matching strategy ✅ **IMPLEMENTED**
+   - **First**: Match by MusicBrainz ID (most accurate)
+   - **Second**: Fallback to case-insensitive name matching
+   - **Third**: Create new artist if not found
+   - **Update**: Backfill MBID on existing artists when found
+   - Prevents duplicate artists while maintaining data accuracy
 
 3. ✅ **Transaction Safety:** Wrapped in `prisma.$transaction()`
    - Atomic operation - all or nothing
@@ -201,6 +202,27 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
    - Don't parse composer/work relationships
    - Leave `isClassical: false` by default
    - Can add in future enhancement
+
+7. ⚠️ **Re-import/Refresh:** NOT YET IMPLEMENTED
+   - **Current**: Duplicate check blocks re-import (409 error)
+   - **Needed**: Add `?refresh=true` parameter to update existing albums
+   - **Needed**: Delete old junction records and recreate relationships
+   - **Use Case**: MusicBrainz corrects artist credits or album metadata
+
+8. ⚠️ **Artist Data Sync:** PARTIAL IMPLEMENTATION
+   - **Current**: Only MBID is updated on existing artists
+   - **Missing**: Name and sortName sync from MusicBrainz
+   - **Needed**: Update artist names when MusicBrainz data changes
+   - **Use Case**: Artist renames (e.g., "Prince" → "The Artist Formerly Known As Prince")
+
+9. ⚠️ **artistCredit Staleness:** KNOWN LIMITATION
+   - **Current**: Set once at import time, never updated
+   - **Issue**: Manual artist name changes don't update artistCredit field
+   - **Options**:
+     - **Option A**: Compute dynamically (slower queries, always accurate)
+     - **Option B**: Periodic background sync job
+     - **Option C**: Trigger rebuild on artist name update (best)
+   - **Recommendation**: Implement Option C with background job fallback
 
 **Migration Steps:**
 
@@ -384,11 +406,13 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 - Let user pick before import instead of auto-selecting first
 
 #### A2. Multi-Artist Database Schema (4 hours)  
-**Status:** ❌ MISSING - **CRITICAL FOR DATA ACCURACY**
-- Add `ReleaseGroupArtist` junction table to schema
-- Add `Artist.musicbrainzId` field for better matching
-- Update import logic to handle collaborations properly
-- Test with albums like "David Bowie & Queen - Under Pressure"
+**Status:** ✅ COMPLETE - **IMPLEMENTED & TESTED**
+- ✅ Added `ReleaseGroupArtist` junction table with position and joinPhrase
+- ✅ Added `Artist.musicbrainzId` unique field for MBID matching
+- ✅ Added `ReleaseGroup.artistCredit` for formatted display string
+- ✅ Updated import logic with three-tier artist matching
+- ✅ All 309 tests passing with 96.35% coverage
+- ✅ Tested with multi-artist albums (David Bowie & Queen, etc.)
 
 #### A3. Track Preview Modal (4 hours)
 **Status:** ❌ MISSING - **IMPORTANT FOR TRANSPARENCY** 
@@ -411,14 +435,37 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 - Toast notifications with "View Album" action
 - Import history/recent imports
 
-### Phase C: Future Enhancements 🟢 LOW PRIORITY
+### Phase C: Data Refresh & Sync Features 🟡 MEDIUM PRIORITY
 
-#### C1. Album Art Integration (4 hours)
+#### C1. Re-import/Refresh Mechanism (4 hours)
+**Status:** ❌ NOT IMPLEMENTED
+- Add `?refresh=true` query parameter to import endpoint
+- Delete existing junction records before re-creating
+- Update album metadata from MusicBrainz
+- **Use Case**: MusicBrainz corrects artist credits after initial import
+
+#### C2. Artist Data Synchronization (4 hours)
+**Status:** ⚠️ PARTIAL - Only MBID updates
+- Sync artist name and sortName on every import
+- Detect changes in MusicBrainz artist data
+- Update local artist records to match MusicBrainz
+- **Use Case**: Artist name changes (Prince, TAFKAP, etc.)
+
+#### C3. artistCredit Rebuild System (6 hours)
+**Status:** ❌ NOT IMPLEMENTED
+- Implement trigger to rebuild artistCredit on artist name changes
+- Add background job for periodic sync validation
+- Ensure artistCredit stays in sync with artist names
+- **Prevents**: Stale display strings after manual artist edits
+
+### Phase D: Future Enhancements 🟢 LOW PRIORITY
+
+#### D1. Album Art Integration (4 hours)
 - Cover Art Archive integration
 - Automatic album art fetching during import
 - Fallback image handling
 
-#### C2. Enhanced Search Features (6 hours)
+#### D2. Enhanced Search Features (6 hours)
 - Barcode scanning support
 - Advanced filtering options
 - Search history and favorites
@@ -493,9 +540,14 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 
 ### 🚨 Critical Gaps (Must Fix)
 - ❌ **No Release Selection** - Users can't choose CD vs Vinyl vs Digital
-- ❌ **Single Artist Limitation** - Collaborations break or lose secondary artists  
+- ✅ **Multi-Artist Support** - ~~Single artist limitation~~ **FIXED - Full multi-artist implementation complete**
 - ❌ **No Track Preview** - Users don't see what they're importing
 - ❌ **Auto-First Release** - May import wrong edition (e.g., remaster instead of original)
+
+### ⚠️ Data Sync Limitations (Should Fix)
+- ⚠️ **No Re-import** - Can't update albums after MusicBrainz corrections
+- ⚠️ **Partial Artist Sync** - Only MBID updates, not name/sortName changes
+- ⚠️ **Stale artistCredit** - Manual artist edits don't update display strings
 
 ### 🎯 Success Criteria (Full Implementation)
 
@@ -504,9 +556,13 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 - ✅ Import completes in < 5 seconds per album
 - ✅ Duplicates are detected and prevented  
 - ✅ Track data is accurate (title, duration, order)
-- ❌ **NEEDED** - Multi-artist albums properly handled
+- ✅ **IMPLEMENTED** - Multi-artist albums properly handled with junction table
+- ✅ **IMPLEMENTED** - Artist matching by MusicBrainz ID with fallback
+- ✅ **IMPLEMENTED** - Artist credit formatting ("David Bowie & Queen")
 - ❌ **NEEDED** - Users can select specific release edition
 - ❌ **NEEDED** - Track preview before import
+- ⚠️ **PARTIAL** - Re-import/refresh functionality for data updates
+- ⚠️ **PARTIAL** - Full artist data sync (name, sortName)
 - ✅ Error messages are clear and actionable
 
 

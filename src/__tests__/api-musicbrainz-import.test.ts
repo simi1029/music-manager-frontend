@@ -39,8 +39,10 @@ vi.mock('@/lib/db', () => ({
       findFirst: vi.fn()
     },
     artist: {
+      findUnique: vi.fn(),
       findFirst: vi.fn(),
-      create: vi.fn()
+      create: vi.fn(),
+      update: vi.fn()
     },
     releaseGroup: {
       create: vi.fn()
@@ -56,6 +58,7 @@ import { prisma } from '@/lib/db'
 describe('POST /api/musicbrainz/import', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
   })
 
   it('should return 401 when user is not authenticated', async () => {
@@ -148,6 +151,7 @@ describe('POST /api/musicbrainz/import', () => {
       id: 'new-artist-1',
       name: 'David Bowie',
       sortName: 'Bowie, David',
+      musicbrainzId: null,
       country: null,
       notes: null,
       imageUrl: null,
@@ -234,6 +238,19 @@ describe('POST /api/musicbrainz/import', () => {
       id: 'existing-artist-1',
       name: 'David Bowie',
       sortName: 'Bowie, David',
+      musicbrainzId: null,
+      country: null,
+      notes: null,
+      imageUrl: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+
+    vi.mocked(prisma.artist.update).mockResolvedValue({
+      id: 'existing-artist-1',
+      name: 'David Bowie',
+      sortName: 'Bowie, David',
+      musicbrainzId: 'artist-1',
       country: null,
       notes: null,
       imageUrl: null,
@@ -289,6 +306,10 @@ describe('POST /api/musicbrainz/import', () => {
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
     expect(vi.mocked(prisma.artist.create)).not.toHaveBeenCalled()
+    expect(vi.mocked(prisma.artist.update)).toHaveBeenCalledWith({
+      where: { id: 'existing-artist-1' },
+      data: { musicbrainzId: 'artist-1' }
+    })
   })
 
   it('should handle tracks with null duration', async () => {
@@ -302,6 +323,7 @@ describe('POST /api/musicbrainz/import', () => {
       id: 'artist-1',
       name: 'David Bowie',
       sortName: 'Bowie, David',
+      musicbrainzId: null,
       country: null,
       notes: null,
       imageUrl: null,
@@ -390,6 +412,7 @@ describe('POST /api/musicbrainz/import', () => {
       id: 'artist-1',
       name: 'David Bowie',
       sortName: 'Bowie, David',
+      musicbrainzId: null,
       country: null,
       notes: null,
       imageUrl: null,
@@ -461,6 +484,7 @@ describe('POST /api/musicbrainz/import', () => {
       id: 'artist-1',
       name: 'David Bowie',
       sortName: 'Bowie, David',
+      musicbrainzId: null,
       country: null,
       notes: null,
       imageUrl: null,
@@ -530,6 +554,7 @@ describe('POST /api/musicbrainz/import', () => {
       id: 'artist-1',
       name: 'David Bowie',
       sortName: 'Bowie, David',
+      musicbrainzId: null,
       country: null,
       notes: null,
       imageUrl: null,
@@ -632,3 +657,4 @@ describe('POST /api/musicbrainz/import', () => {
     expect(data.message).toBe('Failed to import album')
   })
 })
+
