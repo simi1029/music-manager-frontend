@@ -59,13 +59,13 @@ describe('getArtistsList', () => {
         id: 'artist1',
         name: 'Artist 1',
         country: 'US',
-        groups: []
+        releaseGroupArtists: []
       },
       {
         id: 'artist2',
         name: 'Artist 2',
         country: 'UK',
-        groups: []
+        releaseGroupArtists: []
       }
     ]
 
@@ -115,20 +115,22 @@ describe('getArtistsList', () => {
         name: 'Complete Artist',
         country: 'US',
         imageUrl: 'https://example.com/artist.jpg',
-        groups: [
+        releaseGroupArtists: [
           {
-            id: 'album1',
-            title: 'Album 1',
-            releases: [
-              {
-                tracks: [
-                  {
-                    id: 't1',
-                    ratings: [{ score: 8 }]
-                  }
-                ]
-              }
-            ]
+            releaseGroup: {
+              id: 'album1',
+              title: 'Album 1',
+              releases: [
+                {
+                  tracks: [
+                    {
+                      id: 't1',
+                      ratings: [{ score: 8 }]
+                    }
+                  ]
+                }
+              ]
+            }
           }
         ]
       }
@@ -139,8 +141,8 @@ describe('getArtistsList', () => {
     const result = await getArtistsList()
 
     expect(result).toEqual(completeArtists)
-    expect(result[0].groups).toHaveLength(1)
-    expect(result[0].groups[0].releases).toHaveLength(1)
+    expect(result[0].releaseGroupArtists).toHaveLength(1)
+    expect(result[0].releaseGroupArtists[0].releaseGroup.releases).toHaveLength(1)
   })
 
   it('should handle artists with no albums', async () => {
@@ -149,7 +151,7 @@ describe('getArtistsList', () => {
         id: 'artist1',
         name: 'New Artist',
         country: 'US',
-        groups: []
+        releaseGroupArtists: []
       }
     ]
 
@@ -157,7 +159,7 @@ describe('getArtistsList', () => {
 
     const result = await getArtistsList()
 
-    expect(result[0].groups).toEqual([])
+    expect(result[0].releaseGroupArtists).toEqual([])
   })
 })
 
@@ -172,18 +174,20 @@ describe('getArtistWithAlbums', () => {
       name: 'Test Artist',
       country: 'US',
       imageUrl: 'https://example.com/artist.jpg',
-      groups: [
+      releaseGroupArtists: [
         {
-          id: 'album1',
-          title: 'Album 1',
-          covers: [{ url: 'https://example.com/cover.jpg' }],
-          releases: [
-            {
-              tracks: [
-                { id: 't1', title: 'Track 1', ratings: [{ score: 8 }] }
-              ]
-            }
-          ]
+          releaseGroup: {
+            id: 'album1',
+            title: 'Album 1',
+            covers: [{ url: 'https://example.com/cover.jpg' }],
+            releases: [
+              {
+                tracks: [
+                  { id: 't1', title: 'Track 1', ratings: [{ score: 8 }] }
+                ]
+              }
+            ]
+          }
         }
       ]
     }
@@ -211,7 +215,7 @@ describe('getArtistWithAlbums', () => {
     vi.mocked(prisma.artist.findUnique).mockResolvedValue({
       id: 'artist1',
       name: 'Test',
-      groups: []
+      releaseGroupArtists: []
     } as any)
 
     await getArtistWithAlbums('artist1')
@@ -251,35 +255,37 @@ describe('getArtistWithAlbums', () => {
       country: 'US',
       notes: 'Test notes',
       imageUrl: 'https://example.com/artist.jpg',
-      groups: [
+      releaseGroupArtists: [
         {
-          id: 'album1',
-          title: 'Album 1',
-          year: 2023,
-          primaryType: 'Album',
-          coverValue: 8,
-          productionValue: 9,
-          mixValue: 7,
-          covers: [
-            { url: 'https://example.com/cover1.jpg' },
-            { url: 'https://example.com/cover2.jpg' }
-          ],
-          releases: [
-            {
-              id: 'release1',
-              tracks: [
-                {
-                  id: 't1',
-                  number: 1,
-                  title: 'Track 1',
-                  durationSec: 180,
-                  ratings: [
-                    { id: 'r1', score: 8, userId: 'u1', trackId: 't1' }
-                  ]
-                }
-              ]
-            }
-          ]
+          releaseGroup: {
+            id: 'album1',
+            title: 'Album 1',
+            year: 2023,
+            primaryType: 'Album',
+            coverValue: 8,
+            productionValue: 9,
+            mixValue: 7,
+            covers: [
+              { url: 'https://example.com/cover1.jpg' },
+              { url: 'https://example.com/cover2.jpg' }
+            ],
+            releases: [
+              {
+                id: 'release1',
+                tracks: [
+                  {
+                    id: 't1',
+                    number: 1,
+                    title: 'Track 1',
+                    durationSec: 180,
+                    ratings: [
+                      { id: 'r1', score: 8, userId: 'u1', trackId: 't1' }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
         }
       ]
     }
@@ -289,11 +295,11 @@ describe('getArtistWithAlbums', () => {
     const result = await getArtistWithAlbums('artist1')
 
     expect(result).toEqual(completeArtist)
-    expect(result?.groups).toHaveLength(1)
-    expect(result?.groups[0].covers).toHaveLength(2)
-    expect(result?.groups[0].releases).toHaveLength(1)
-    expect(result?.groups[0].releases[0].tracks).toHaveLength(1)
-    expect(result?.groups[0].releases[0].tracks[0].ratings).toHaveLength(1)
+    expect(result?.releaseGroupArtists).toHaveLength(1)
+    expect(result?.releaseGroupArtists[0].releaseGroup.covers).toHaveLength(2)
+    expect(result?.releaseGroupArtists[0].releaseGroup.releases).toHaveLength(1)
+    expect(result?.releaseGroupArtists[0].releaseGroup.releases[0].tracks).toHaveLength(1)
+    expect(result?.releaseGroupArtists[0].releaseGroup.releases[0].tracks[0].ratings).toHaveLength(1)
   })
 
   it('should handle artist with no albums', async () => {
@@ -301,14 +307,14 @@ describe('getArtistWithAlbums', () => {
       id: 'artist1',
       name: 'New Artist',
       country: 'US',
-      groups: []
+      releaseGroupArtists: []
     }
 
     vi.mocked(prisma.artist.findUnique).mockResolvedValue(artistWithNoAlbums as any)
 
     const result = await getArtistWithAlbums('artist1')
 
-    expect(result?.groups).toEqual([])
+    expect(result?.releaseGroupArtists).toEqual([])
   })
 
   it('should handle artist with null optional fields', async () => {
@@ -319,7 +325,7 @@ describe('getArtistWithAlbums', () => {
       country: null,
       notes: null,
       imageUrl: null,
-      groups: []
+      releaseGroupArtists: []
     }
 
     vi.mocked(prisma.artist.findUnique).mockResolvedValue(artistWithNulls as any)
@@ -386,11 +392,11 @@ describe('getArtistsBasic', () => {
 
     const result = await getArtistsBasic()
 
-    expect(result[0]).not.toHaveProperty('groups')
+    expect(result[0]).not.toHaveProperty('releaseGroupArtists')
     expect(prisma.artist.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         select: expect.not.objectContaining({
-          groups: expect.anything()
+          releaseGroupArtists: expect.anything()
         })
       })
     )

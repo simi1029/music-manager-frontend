@@ -142,7 +142,7 @@ export default function ImportPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6 space-y-8">
+    <main className="mx-auto max-w-5xl p-6 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Import Albums</h1>
         <p className="text-lg text-gray-600">

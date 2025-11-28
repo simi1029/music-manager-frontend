@@ -49,7 +49,7 @@ export default async function ArtistPage({ params }: Props) {
   ]
 
   return (
-    <main className="mx-auto max-w-3xl p-6 space-y-6">
+    <main className="mx-auto max-w-5xl p-6 space-y-6">
       <div className="flex gap-6">
         {/* Artist Image */}
         <div className="flex-shrink-0">
