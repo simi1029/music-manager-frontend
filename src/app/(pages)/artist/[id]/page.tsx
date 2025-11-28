@@ -4,8 +4,29 @@ import { notFound } from 'next/navigation'
 import { getArtistWithAlbums } from '@/lib/queries/artists'
 import { calculateArtistAlbumRating } from '@/lib/transformers/artists'
 import { AlbumCard } from '@/components/albums'
+import { PrimaryType } from '@/generated/prisma/enums'
 
 type Props = { params: { id: string } | Promise<{ id: string }> }
+
+// Helper to organize albums by primary type
+function groupAlbumsByType(artist: NonNullable<Awaited<ReturnType<typeof getArtistWithAlbums>>>) {
+  const albumsByType: Record<PrimaryType, typeof artist.releaseGroupArtists> = {
+    [PrimaryType.ALBUM]: [],
+    [PrimaryType.SINGLE]: [],
+    [PrimaryType.EP]: [],
+    [PrimaryType.COMPILATION]: [],
+    [PrimaryType.LIVE]: [],
+    [PrimaryType.SOUNDTRACK]: [],
+    [PrimaryType.OTHER]: [],
+  }
+
+  artist.releaseGroupArtists.forEach(rga => {
+    const type = rga.releaseGroup.primaryType
+    albumsByType[type].push(rga)
+  })
+
+  return albumsByType
+}
 
 export default async function ArtistPage({ params }: Props) {
   const { id } = await params
@@ -14,6 +35,18 @@ export default async function ArtistPage({ params }: Props) {
   const artist = await getArtistWithAlbums(id)
 
   if (!artist) return notFound()
+
+  // Group albums by type
+  const albumsByType = groupAlbumsByType(artist)
+  const typeSections: { type: PrimaryType; label: string }[] = [
+    { type: PrimaryType.ALBUM, label: 'Albums' },
+    { type: PrimaryType.SINGLE, label: 'Singles' },
+    { type: PrimaryType.EP, label: 'EPs' },
+    { type: PrimaryType.LIVE, label: 'Live Albums' },
+    { type: PrimaryType.COMPILATION, label: 'Compilations' },
+    { type: PrimaryType.SOUNDTRACK, label: 'Soundtracks' },
+    { type: PrimaryType.OTHER, label: 'Other' },
+  ]
 
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
@@ -63,40 +96,56 @@ export default async function ArtistPage({ params }: Props) {
         </div>
       </div>
 
-      <section>
-        <h2 className="text-lg font-medium mb-3">Albums ({artist.groups.length})</h2>
-        <div className="space-y-3">
-          {artist.groups.map((album) => {
-            // Use transformation layer to calculate album rating
-            const albumRating = calculateArtistAlbumRating(album)
-            const tracks = album.releases.flatMap(r => r.tracks)
-            const coverUrl = album.covers && album.covers.length > 0 ? album.covers[0].url : null
+      {/* Albums grouped by type */}
+      {typeSections.map(({ type, label }) => {
+        const albums = albumsByType[type]
+        if (albums.length === 0) return null
 
-            return (
-              <AlbumCard
-                key={album.id}
-                album={{
-                  id: album.id,
-                  title: album.title,
-                  coverUrl,
-                  tracksCount: tracks.length,
-                  rankValue: albumRating.rankValue > 0 ? albumRating.rankValue : null,
-                  rankLabel: albumRating.rankLabel,
-                }}
-                year={album.year}
-                primaryType={album.primaryType}
-                coverSize="sm"
-                showArtist={false}
-                showYear={true}
-                showType={true}
-                showTrackCount={true}
-                showRating={true}
-                showRatingAsLabel={true}
-              />
-            )
-          })}
-        </div>
-      </section>
+        return (
+          <section key={type} className="mt-8 first:mt-6">
+            <h2 className="text-lg font-medium mb-3">
+              {label} ({albums.length})
+            </h2>
+            <div className="space-y-3">
+              {albums.map((rga) => {
+                const album = rga.releaseGroup
+                const albumRating = calculateArtistAlbumRating(album)
+                const tracks = album.releases.flatMap(r => r.tracks)
+                const coverUrl = album.covers && album.covers.length > 0 ? album.covers[0].url : null
+
+                // Get all artists for this album
+                const artists = album.artists
+                  .sort((a, b) => a.position - b.position)
+                  .map(a => a.artist)
+
+                return (
+                  <AlbumCard
+                    key={album.id}
+                    album={{
+                      id: album.id,
+                      title: album.title,
+                      coverUrl,
+                      tracksCount: tracks.length,
+                      rankValue: albumRating.rankValue > 0 ? albumRating.rankValue : null,
+                      rankLabel: albumRating.rankLabel,
+                    }}
+                    artists={artists} // Pass all artists
+                    year={album.year}
+                    primaryType={album.primaryType}
+                    coverSize="sm"
+                    showArtist={true}
+                    showYear={true}
+                    showType={true}
+                    showTrackCount={true}
+                    showRating={true}
+                    showRatingAsLabel={true}
+                  />
+                )
+              })}
+            </div>
+          </section>
+        )
+      })}
     </main>
   )
 }

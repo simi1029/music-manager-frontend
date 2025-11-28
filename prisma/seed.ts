@@ -15,8 +15,15 @@ async function main() {
     data: {
       title: 'Example Album 1',
       primaryType: 'ALBUM',
-      artistId: artist1.id,
       year: 2018,
+      artistCredit: artist1.name,
+      artists: {
+        create: {
+          artistId: artist1.id,
+          position: 0,
+          joinPhrase: '',
+        },
+      },
     },
   });
 
@@ -24,8 +31,15 @@ async function main() {
     data: {
       title: 'Example Album 2',
       primaryType: 'ALBUM',
-      artistId: artist2.id,
       year: 2025,
+      artistCredit: artist2.name,
+      artists: {
+        create: {
+          artistId: artist2.id,
+          position: 0,
+          joinPhrase: '',
+        },
+      },
     },
   });
 

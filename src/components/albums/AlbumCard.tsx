@@ -23,6 +23,10 @@ export interface AlbumCardProps {
     id: string
     name: string
   }
+  artists?: Array<{ // New: support multiple artists
+    id: string
+    name: string
+  }>
 
   year?: number | null
   primaryType?: string
@@ -49,6 +53,7 @@ export interface AlbumCardProps {
 export const AlbumCard = memo(function AlbumCard({
   album,
   artist,
+  artists,
   year,
   primaryType,
   coverSize = 'md',
@@ -62,6 +67,18 @@ export const AlbumCard = memo(function AlbumCard({
   clickable = true,
   className = '',
 }: AlbumCardProps) {
+  // Determine which artists to display (prefer artists array, fallback to single artist)
+  const displayArtists = useMemo(() => {
+    if (artists && artists.length > 0) return artists
+    if (artist) return [artist]
+    return []
+  }, [artists, artist])
+
+  const artistNames = useMemo(() => 
+    displayArtists.map(a => a.name).join(' & '),
+    [displayArtists]
+  )
+
   // Calculate rating-based styling
   const { quantized, bgClass, textColor, artistLinkColor, metadataColor } = useMemo(() => {
     const quantized = album.rankValue ?? null
@@ -122,7 +139,7 @@ export const AlbumCard = memo(function AlbumCard({
       onKeyDown={handleKeyDown}
       tabIndex={clickable ? 0 : undefined}
       role="article"
-      aria-label={`Album: ${album.title}${artist ? ` by ${artist.name}` : ''}`}
+      aria-label={`Album: ${album.title}${artistNames ? ` by ${artistNames}` : ''}`}
     >
       <div className="album-content flex gap-4">
         {/* Album Cover */}
@@ -164,15 +181,22 @@ export const AlbumCard = memo(function AlbumCard({
           <div className="flex-1 min-w-0">
             <div className={`font-medium truncate ${textColor}`}>{album.title}</div>
             
-            {/* Artist Link */}
-            {showArtist && artist && (
-              <Link
-                href={`/artist/${artist.id}`}
-                className={`text-sm ${artistLinkColor} hover:underline inline-block focus:outline-none focus:ring-2 focus:ring-blue-500 rounded`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {artist.name}
-              </Link>
+            {/* Artist Links */}
+            {showArtist && displayArtists.length > 0 && (
+              <div className="text-sm">
+                {displayArtists.map((a, idx) => (
+                  <span key={a.id}>
+                    <Link
+                      href={`/artist/${a.id}`}
+                      className={`${artistLinkColor} hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {a.name}
+                    </Link>
+                    {idx < displayArtists.length - 1 && <span className={artistLinkColor}> & </span>}
+                  </span>
+                ))}
+              </div>
             )}
             
             {/* Metadata Line */}

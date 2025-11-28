@@ -206,41 +206,45 @@ describe('transformArtistWithRatings', () => {
     name: 'Test Artist',
     country: 'US',
     imageUrl: 'https://example.com/artist.jpg',
-    groups: [
+    releaseGroupArtists: [
       {
-        id: 'album1',
-        title: 'Album 1',
-        year: 2023,
-        primaryType: 'Album',
-        coverValue: 8,
-        productionValue: 9,
-        mixValue: 7,
-        releases: [
-          {
-            tracks: [
-              { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [{ score: 8 }] },
-              { id: 't2', number: 2, title: 'Track 2', durationSec: 200, ratings: [{ score: 9 }] }
-            ]
-          }
-        ],
-        covers: []
+        releaseGroup: {
+          id: 'album1',
+          title: 'Album 1',
+          year: 2023,
+          primaryType: 'Album',
+          coverValue: 8,
+          productionValue: 9,
+          mixValue: 7,
+          releases: [
+            {
+              tracks: [
+                { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [{ score: 8 }] },
+                { id: 't2', number: 2, title: 'Track 2', durationSec: 200, ratings: [{ score: 9 }] }
+              ]
+            }
+          ],
+          covers: []
+        }
       },
       {
-        id: 'album2',
-        title: 'Album 2',
-        year: 2024,
-        primaryType: 'Album',
-        coverValue: 7,
-        productionValue: 8,
-        mixValue: 8,
-        releases: [
-          {
-            tracks: [
-              { id: 't3', number: 1, title: 'Track 3', durationSec: 190, ratings: [{ score: 7 }] }
-            ]
-          }
-        ],
-        covers: []
+        releaseGroup: {
+          id: 'album2',
+          title: 'Album 2',
+          year: 2024,
+          primaryType: 'Album',
+          coverValue: 7,
+          productionValue: 8,
+          mixValue: 8,
+          releases: [
+            {
+              tracks: [
+                { id: 't3', number: 1, title: 'Track 3', durationSec: 190, ratings: [{ score: 7 }] }
+              ]
+            }
+          ],
+          covers: []
+        }
       }
     ]
   }
@@ -262,7 +266,7 @@ describe('transformArtistWithRatings', () => {
   it('should handle artist with no albums', () => {
     const noAlbumsArtist: PrismaArtistWithAlbums = {
       ...baseArtist,
-      groups: []
+      releaseGroupArtists: []
     }
 
     const result = transformArtistWithRatings(noAlbumsArtist)
@@ -276,23 +280,25 @@ describe('transformArtistWithRatings', () => {
   it('should handle artist with unrated albums', () => {
     const unratedArtist: PrismaArtistWithAlbums = {
       ...baseArtist,
-      groups: [
+      releaseGroupArtists: [
         {
-          id: 'album1',
-          title: 'Album 1',
-          year: 2023,
-          primaryType: 'Album',
-          coverValue: null,
-          productionValue: null,
-          mixValue: null,
-          releases: [
-            {
-              tracks: [
-                { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [] }
-              ]
-            }
-          ],
-          covers: []
+          releaseGroup: {
+            id: 'album1',
+            title: 'Album 1',
+            year: 2023,
+            primaryType: 'Album',
+            coverValue: null,
+            productionValue: null,
+            mixValue: null,
+            releases: [
+              {
+                tracks: [
+                  { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [] }
+                ]
+              }
+            ],
+            covers: []
+          }
         }
       ]
     }
@@ -307,40 +313,44 @@ describe('transformArtistWithRatings', () => {
   it('should handle artist with mix of rated and unrated albums', () => {
     const mixedArtist: PrismaArtistWithAlbums = {
       ...baseArtist,
-      groups: [
+      releaseGroupArtists: [
         {
-          id: 'album1',
-          title: 'Rated Album',
-          year: 2023,
-          primaryType: 'Album',
-          coverValue: 8,
-          productionValue: 9,
-          mixValue: 7,
-          releases: [
-            {
-              tracks: [
-                { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [{ score: 8 }] }
-              ]
-            }
-          ],
-          covers: []
+          releaseGroup: {
+            id: 'album1',
+            title: 'Rated Album',
+            year: 2023,
+            primaryType: 'Album',
+            coverValue: 8,
+            productionValue: 9,
+            mixValue: 7,
+            releases: [
+              {
+                tracks: [
+                  { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [{ score: 8 }] }
+                ]
+              }
+            ],
+            covers: []
+          }
         },
         {
-          id: 'album2',
-          title: 'Unrated Album',
-          year: 2024,
-          primaryType: 'Album',
-          coverValue: null,
-          productionValue: null,
-          mixValue: null,
-          releases: [
-            {
-              tracks: [
-                { id: 't2', number: 1, title: 'Track 2', durationSec: 190, ratings: [] }
-              ]
-            }
-          ],
-          covers: []
+          releaseGroup: {
+            id: 'album2',
+            title: 'Unrated Album',
+            year: 2024,
+            primaryType: 'Album',
+            coverValue: null,
+            productionValue: null,
+            mixValue: null,
+            releases: [
+              {
+                tracks: [
+                  { id: 't2', number: 1, title: 'Track 2', durationSec: 190, ratings: [] }
+                ]
+              }
+            ],
+            covers: []
+          }
         }
       ]
     }
@@ -391,23 +401,25 @@ describe('transformArtistsWithRatings', () => {
     name: 'Artist 1',
     country: 'US',
     imageUrl: 'https://example.com/artist1.jpg',
-    groups: [
+    releaseGroupArtists: [
       {
-        id: 'album1',
-        title: 'Album 1',
-        year: 2023,
-        primaryType: 'Album',
-        coverValue: 8,
-        productionValue: 9,
-        mixValue: 7,
-        releases: [
-          {
-            tracks: [
-              { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [{ score: 8 }] }
-            ]
-          }
-        ],
-        covers: []
+        releaseGroup: {
+          id: 'album1',
+          title: 'Album 1',
+          year: 2023,
+          primaryType: 'Album',
+          coverValue: 8,
+          productionValue: 9,
+          mixValue: 7,
+          releases: [
+            {
+              tracks: [
+                { id: 't1', number: 1, title: 'Track 1', durationSec: 180, ratings: [{ score: 8 }] }
+              ]
+            }
+          ],
+          covers: []
+        }
       }
     ]
   }
@@ -417,23 +429,25 @@ describe('transformArtistsWithRatings', () => {
     name: 'Artist 2',
     country: 'UK',
     imageUrl: null,
-    groups: [
+    releaseGroupArtists: [
       {
-        id: 'album2',
-        title: 'Album 2',
-        year: 2024,
-        primaryType: 'Album',
-        coverValue: 7,
-        productionValue: 8,
-        mixValue: 8,
-        releases: [
-          {
-            tracks: [
-              { id: 't2', number: 1, title: 'Track 2', durationSec: 190, ratings: [{ score: 7 }] }
-            ]
-          }
-        ],
-        covers: []
+        releaseGroup: {
+          id: 'album2',
+          title: 'Album 2',
+          year: 2024,
+          primaryType: 'Album',
+          coverValue: 7,
+          productionValue: 8,
+          mixValue: 8,
+          releases: [
+            {
+              tracks: [
+                { id: 't2', number: 1, title: 'Track 2', durationSec: 190, ratings: [{ score: 7 }] }
+              ]
+            }
+          ],
+          covers: []
+        }
       }
     ]
   }

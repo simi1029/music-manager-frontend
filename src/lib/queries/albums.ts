@@ -9,7 +9,6 @@ import { prisma } from '@/lib/db'
  * Used across list views and detail pages
  */
 export const albumInclude = {
-  artist: true,
   artists: {
     include: { 
       artist: true 
@@ -70,7 +69,13 @@ export async function getAlbumWithRatings(id: string) {
  */
 export async function getAlbumsByArtist(artistId: string) {
   return prisma.releaseGroup.findMany({
-    where: { artistId },
+    where: {
+      artists: {
+        some: {
+          artistId
+        }
+      }
+    },
     include: albumInclude,
     orderBy: { year: 'desc' },
   })

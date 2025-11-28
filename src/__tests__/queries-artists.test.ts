@@ -14,37 +14,37 @@ vi.mock('../lib/db', () => ({
 
 describe('artistWithAlbumsInclude', () => {
   it('should have correct include structure for list view', () => {
-    expect(artistWithAlbumsInclude).toHaveProperty('groups')
-    expect(artistWithAlbumsInclude.groups).toHaveProperty('include')
-    expect(artistWithAlbumsInclude.groups.include).toHaveProperty('releases')
+    expect(artistWithAlbumsInclude).toHaveProperty('releaseGroupArtists')
+    expect(artistWithAlbumsInclude.releaseGroupArtists).toHaveProperty('include')
+    expect(artistWithAlbumsInclude.releaseGroupArtists.include).toHaveProperty('releaseGroup')
   })
 
   it('should include nested tracks and ratings', () => {
-    expect(artistWithAlbumsInclude.groups.include.releases).toHaveProperty('include')
-    expect(artistWithAlbumsInclude.groups.include.releases.include).toHaveProperty('tracks')
-    expect(artistWithAlbumsInclude.groups.include.releases.include.tracks).toHaveProperty('include')
-    expect(artistWithAlbumsInclude.groups.include.releases.include.tracks.include).toHaveProperty('ratings')
-    expect(artistWithAlbumsInclude.groups.include.releases.include.tracks.include.ratings).toBe(true)
+    expect(artistWithAlbumsInclude.releaseGroupArtists.include.releaseGroup.include.releases).toHaveProperty('include')
+    expect(artistWithAlbumsInclude.releaseGroupArtists.include.releaseGroup.include.releases.include).toHaveProperty('tracks')
+    expect(artistWithAlbumsInclude.releaseGroupArtists.include.releaseGroup.include.releases.include.tracks).toHaveProperty('include')
+    expect(artistWithAlbumsInclude.releaseGroupArtists.include.releaseGroup.include.releases.include.tracks.include).toHaveProperty('ratings')
+    expect(artistWithAlbumsInclude.releaseGroupArtists.include.releaseGroup.include.releases.include.tracks.include.ratings).toBe(true)
   })
 })
 
 describe('artistDetailInclude', () => {
   it('should have correct include structure for detail view', () => {
-    expect(artistDetailInclude).toHaveProperty('groups')
-    expect(artistDetailInclude.groups).toHaveProperty('include')
+    expect(artistDetailInclude).toHaveProperty('releaseGroupArtists')
+    expect(artistDetailInclude.releaseGroupArtists).toHaveProperty('include')
   })
 
   it('should include covers in detail view', () => {
-    expect(artistDetailInclude.groups.include).toHaveProperty('covers')
-    expect(artistDetailInclude.groups.include.covers).toBe(true)
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include).toHaveProperty('covers')
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include.covers).toBe(true)
   })
 
   it('should include releases with tracks and ratings', () => {
-    expect(artistDetailInclude.groups.include).toHaveProperty('releases')
-    expect(artistDetailInclude.groups.include.releases).toHaveProperty('include')
-    expect(artistDetailInclude.groups.include.releases.include).toHaveProperty('tracks')
-    expect(artistDetailInclude.groups.include.releases.include.tracks).toHaveProperty('include')
-    expect(artistDetailInclude.groups.include.releases.include.tracks.include).toHaveProperty('ratings')
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include).toHaveProperty('releases')
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include.releases).toHaveProperty('include')
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include.releases.include).toHaveProperty('tracks')
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include.releases.include.tracks).toHaveProperty('include')
+    expect(artistDetailInclude.releaseGroupArtists.include.releaseGroup.include.releases.include.tracks.include).toHaveProperty('ratings')
   })
 })
 

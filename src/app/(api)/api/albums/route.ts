@@ -15,12 +15,20 @@ export async function GET() {
       const transformed = transformAlbumWithRating(a)
       const quantized = transformed.rating.rankValue !== null ? quantizeRank(transformed.rating.rankValue) : null
       
+      // Get all artists
+      const artists = a.artists
+        .sort((x, y) => x.position - y.position)
+        .map(ra => ra.artist)
+      
       return {
         id: a.id,
         title: a.title,
-        artist: {
-          id: a.artist?.id ?? '',
-          name: a.artist?.name ?? 'Unknown',
+        artist: artists.length > 0 ? {
+          id: artists[0].id,
+          name: a.artistCredit || artists.map(art => art.name).join(' & '),
+        } : {
+          id: '',
+          name: 'Unknown'
         },
         tracksCount: transformed.tracks.length,
         albumRankValue: quantized,

@@ -168,13 +168,14 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 
 **Decisions Made:**
 
-1. ✅ **Multi-Artist Albums:** Proper many-to-many implementation ✅ **IMPLEMENTED**
-   - `ReleaseGroupArtist` junction table
+1. ✅ **Multi-Artist Albums:** Flat structure (no primary artist) ✅ **IMPLEMENTED**
+   - `ReleaseGroupArtist` junction table with all artists
    - `Artist.musicbrainzId` field for matching
-   - Primary artist in `ReleaseGroup.artistId`
-   - All artists in `ReleaseGroupArtist` with position/joinPhrase
+   - **NO** primary artist field - all artists equal
+   - All artists stored in `ReleaseGroupArtist` with position/joinPhrase
    - Formatted credit stored in `ReleaseGroup.artistCredit`
-   - Collaborations will appear on artist pages
+   - Artist pages group albums by primaryType (Album/Single/EP/etc)
+   - Album cards show all artists with individual links
 
 2. ✅ **Artist Matching:** Three-tier matching strategy ✅ **IMPLEMENTED**
    - **First**: Match by MusicBrainz ID (most accurate)
@@ -268,6 +269,7 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 - Artist-first search mode with artist selector
 - Advanced search query building
 - Debounced search
+- **Primary Type Filter** - When searching by artist, add dropdown to filter by Album/Single/EP/etc
 
 **Current Implementation:** Simple 3-mode search (Artist/Album/Barcode) with basic results display. Auto-imports first release without user selection.
 
@@ -277,6 +279,7 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 - Artist-first search mode with disambiguation
 - Combined "Artist - Album" parsing
 - Debounced search with proper loading states
+- **Primary Type Filter** - Filter search results by album type (Albums only, Singles only, etc.)
 
 ---
 
@@ -428,6 +431,7 @@ This plan covers the **MusicBrainz Import** feature - Import albums (with tracks
 - Combined "Artist - Album" parsing
 - Debounced search with loading states
 - Search result skeletons
+- **Primary Type Filter** - Dropdown to filter by Album/Single/EP when searching by artist
 
 #### B2. Better Import Flow (4 hours) 
 - Progress indicators during import

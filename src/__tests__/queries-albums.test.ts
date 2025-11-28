@@ -14,10 +14,10 @@ vi.mock('../lib/db', () => ({
 
 describe('albumInclude', () => {
   it('should have correct include structure', () => {
-    expect(albumInclude).toHaveProperty('artist')
+    expect(albumInclude).toHaveProperty('artists')
     expect(albumInclude).toHaveProperty('releases')
     expect(albumInclude).toHaveProperty('covers')
-    expect(albumInclude.artist).toBe(true)
+    expect(albumInclude.artists).toHaveProperty('include')
     expect(albumInclude.covers).toBe(true)
   })
 
@@ -169,7 +169,13 @@ describe('getAlbumsByArtist', () => {
     const result = await getAlbumsByArtist('artist1')
 
     expect(prisma.releaseGroup.findMany).toHaveBeenCalledWith({
-      where: { artistId: 'artist1' },
+      where: { 
+        artists: {
+          some: {
+            artistId: 'artist1'
+          }
+        }
+      },
       include: albumInclude,
       orderBy: { year: 'desc' }
     })
@@ -198,7 +204,13 @@ describe('getAlbumsByArtist', () => {
     const result = await getAlbumsByArtist('')
 
     expect(prisma.releaseGroup.findMany).toHaveBeenCalledWith({
-      where: { artistId: '' },
+      where: {
+        artists: {
+          some: {
+            artistId: ''
+          }
+        }
+      },
       include: albumInclude,
       orderBy: { year: 'desc' }
     })

@@ -28,6 +28,7 @@ vi.mock('@/lib/db', () => ({
       update: vi.fn(),
     },
     releaseGroup: {
+      findUnique: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -65,7 +66,7 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
     } as any
 
     // Mock no existing import
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
 
     // Mock MusicBrainz response with multi-artist data
     mockGetRelease.mockResolvedValue({
@@ -239,7 +240,7 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
       }),
     } as any
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
 
     mockGetRelease.mockResolvedValue({
       id: 'release-456',
@@ -300,7 +301,7 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
       }),
     } as any
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
 
     mockGetRelease.mockResolvedValue({
       id: 'release-789',
@@ -378,7 +379,7 @@ describe('MusicBrainz Import - Multi-Artist Support', () => {
       }),
     } as any
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
 
     mockGetRelease.mockResolvedValue({
       id: 'release-multi',

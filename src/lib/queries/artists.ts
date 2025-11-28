@@ -6,30 +6,20 @@ import { prisma } from '@/lib/db'
 
 /**
  * Include for artist detail pages with all album rating data
- * Fetches artist with all albums (groups), releases, tracks, and ratings
- * Includes both primary albums and collaborations
+ * Fetches artist with all albums via junction table
+ * Organized by primaryType for display sections
  */
 export const artistDetailInclude = {
-  groups: {
-    include: {
-      releases: { 
-        include: { 
-          tracks: { 
-            include: { 
-              ratings: true 
-            } 
-          } 
-        } 
-      },
-      covers: true,
-    },
-    orderBy: { year: 'desc' as const },
-  },
   releaseGroupArtists: {
     include: {
       releaseGroup: {
         include: {
-          artist: true,
+          artists: {
+            include: {
+              artist: true
+            },
+            orderBy: { position: 'asc' as const }
+          },
           releases: {
             include: {
               tracks: {
@@ -49,22 +39,9 @@ export const artistDetailInclude = {
 
 /**
  * Include for artist list with nested album data for rating calculations
- * Includes both primary albums and collaborations
+ * Includes all albums via junction table
  */
 export const artistWithAlbumsInclude = {
-  groups: {
-    include: {
-      releases: {
-        include: {
-          tracks: {
-            include: {
-              ratings: true
-            }
-          }
-        }
-      }
-    }
-  },
   releaseGroupArtists: {
     include: {
       releaseGroup: {

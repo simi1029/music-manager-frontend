@@ -91,8 +91,7 @@ model Artist {
   notes               String?
   imageUrl            String? // Artist photo/image URL
   musicbrainzId       String?               @unique // MusicBrainz artist ID for matching
-  groups              ReleaseGroup[] // albums by the artist (primary artist)
-  releaseGroupArtists ReleaseGroupArtist[] // many-to-many relation for collaborations
+  releaseGroupArtists ReleaseGroupArtist[] // many-to-many relation for all albums
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 
@@ -115,8 +114,7 @@ model ReleaseGroup {
   conductor       String?
   soloist         String? // e.g., "Martha Argerich"
   // Relations
-  artistId        String
-  artist          Artist                @relation(fields: [artistId], references: [id])
+  musicbrainzId   String?               @unique // MusicBrainz release-group ID for duplicate prevention
   artistCredit    String? // Formatted artist credit (e.g., "David Bowie & Queen")
   artists         ReleaseGroupArtist[] // many-to-many relation for all contributing artists
   releases        Release[]
@@ -130,10 +128,9 @@ model ReleaseGroup {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
-  // Prevent duplicates: artist + title + year unique (your rule)
-  @@unique([artistId, title, year])
   @@index([title])
   @@index([year])
+  @@index([musicbrainzId])
 }
 
 model Release {

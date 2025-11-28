@@ -45,6 +45,7 @@ vi.mock('@/lib/db', () => ({
       update: vi.fn()
     },
     releaseGroup: {
+      findUnique: vi.fn(),
       create: vi.fn()
     }
   }
@@ -117,13 +118,25 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue({
-      id: 'ext-ref-1',
-      releaseGroupId: 'existing-album-1',
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue({
+      id: 'existing-album-1',
+      title: 'Test Album',
+      primaryType: 'ALBUM',
+      year: 2020,
+      isClassical: false,
+      composer: null,
+      work: null,
+      movement: null,
+      ensemble: null,
+      conductor: null,
+      soloist: null,
       musicbrainzId: 'rg-456',
-      discogsId: null,
-      spotifyUrl: null,
-      bandcampUrl: null
+      artistCredit: 'Test Artist',
+      coverValue: null,
+      productionValue: null,
+      mixValue: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
     })
 
     const request = new NextRequest('http://localhost:3000/api/musicbrainz/import', {
@@ -144,7 +157,8 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.artist.findFirst).mockResolvedValue(null)
     
     vi.mocked(prisma.artist.create).mockResolvedValue({
@@ -232,7 +246,8 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
     
     vi.mocked(prisma.artist.findFirst).mockResolvedValue({
       id: 'existing-artist-1',
@@ -318,7 +333,8 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.artist.findFirst).mockResolvedValue({
       id: 'artist-1',
       name: 'David Bowie',
@@ -407,7 +423,8 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.artist.findFirst).mockResolvedValue({
       id: 'artist-1',
       name: 'David Bowie',
@@ -479,7 +496,8 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.artist.findFirst).mockResolvedValue({
       id: 'artist-1',
       name: 'David Bowie',
@@ -549,7 +567,8 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.artist.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.artist.findFirst).mockResolvedValue({
       id: 'artist-1',
       name: 'David Bowie',
@@ -619,7 +638,7 @@ describe('POST /api/musicbrainz/import', () => {
       expires: '2024-12-31'
     })
 
-    vi.mocked(prisma.externalRef.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.releaseGroup.findUnique).mockResolvedValue(null)
 
     mockGetRelease.mockRejectedValue(new Error('Release not found'))
 

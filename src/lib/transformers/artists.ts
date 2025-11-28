@@ -43,7 +43,9 @@ export interface PrismaArtistWithAlbums {
   name: string
   country: string | null
   imageUrl?: string | null
-  groups: ArtistAlbum[]
+  releaseGroupArtists: Array<{
+    releaseGroup: ArtistAlbum
+  }>
 }
 
 /**
@@ -105,10 +107,11 @@ export function calculateArtistAlbumRating(album: ArtistAlbum): {
  * Centralizes the rating calculation logic for all albums
  */
 export function transformArtistWithRatings(artist: PrismaArtistWithAlbums): ArtistWithRatings {
-  const albumCount = artist.groups.length
+  const albums = artist.releaseGroupArtists.map(rga => rga.releaseGroup)
+  const albumCount = albums.length
   
   // Calculate rating for each album
-  const albumRatings = artist.groups.map(calculateArtistAlbumRating)
+  const albumRatings = albums.map(calculateArtistAlbumRating)
   
   // Compute artist rating (filters out unrated albums automatically)
   const artistRating = computeArtistRating(albumRatings)

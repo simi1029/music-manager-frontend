@@ -33,23 +33,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if already imported
-    const existingRef = await prisma.externalRef.findFirst({
-      where: {
-        musicbrainzId: releaseGroupId,
-      },
-      include: {
-        releaseGroup: true,
-      },
+    // Check if already imported by MusicBrainz release-group ID
+    const existingReleaseGroup = await prisma.releaseGroup.findUnique({
+      where: { musicbrainzId: releaseGroupId }
     })
 
-    if (existingRef) {
+    if (existingReleaseGroup) {
       return NextResponse.json(
         {
           success: false,
           error: 'DUPLICATE',
           message: 'This album is already in your collection',
-          existingAlbumId: existingRef.releaseGroupId,
+          existingAlbumId: existingReleaseGroup.id,
         },
         { status: 409 }
       )
@@ -164,7 +159,7 @@ export async function POST(request: NextRequest) {
         title: albumTitle,
         year,
         primaryType: albumType,
-        artistId: artistRecords[0].id, // Use first artist as primary
+        musicbrainzId: releaseGroupId, // Store MusicBrainz ID for duplicate prevention
         artistCredit, // Store formatted artist credit
         artists: {
           create: artistRecordsWithJoin.map((ar, position) => ({
@@ -216,7 +211,7 @@ export async function POST(request: NextRequest) {
       message: 'Album imported successfully',
       warnings,
       tracksWithNullDuration: tracksWithNullDuration.map(t => {
-        const createdTrack = tracks.find(ct => ct.title === t.title && ct.number === t.number)
+        const createdTrack = tracks.find((ct: { id: string; title: string; number: number; durationSec: number | null }) => ct.title === t.title && ct.number === t.number)
         return {
           id: createdTrack?.id || '',
           number: t.number,
