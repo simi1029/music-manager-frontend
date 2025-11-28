@@ -35,7 +35,14 @@ export const TrackRating = memo(function TrackRating({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ trackId, score }),
       })
-      if (!res.ok) throw new Error('Failed to save rating')
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        const logger = createComponentLogger('track-rating')
+        logger.error({ status: res.status, error: errorData, trackId, score }, 'Rating API request failed')
+        throw new Error(`Failed to save rating: ${res.status} ${errorData.error || ''}`)
+      }
+      
       setRating(score)
       onRatingChange?.()
     } catch (error) {

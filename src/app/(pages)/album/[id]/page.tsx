@@ -47,12 +47,19 @@ export default async function AlbumPage({ params }: Props) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold">{album.title}</h1>
-              <Link 
-                href={`/artist/${album.artist?.id}`}
-                className="text-sm text-gray-500 hover:text-gray-700 hover:underline"
-              >
-                {album.artist?.name ?? 'Unknown'}
-              </Link>
+              <div className="text-sm text-gray-500">
+                {album.artists.map((a, idx) => (
+                  <span key={a.artist.id}>
+                    {idx > 0 && ' & '}
+                    <Link 
+                      href={`/artist/${a.artist.id}`}
+                      className="hover:text-gray-700 hover:underline"
+                    >
+                      {a.artist.name}
+                    </Link>
+                  </span>
+                ))}
+              </div>
               <div className="text-sm mt-1 text-gray-600">Tracks: {tracks.length}</div>
             </div>
             <AlbumRatingDisplay

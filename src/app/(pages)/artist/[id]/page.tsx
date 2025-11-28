@@ -84,11 +84,8 @@ export default async function ArtistPage({ params }: Props) {
         {/* Artist Info */}
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">{artist.name}</h1>
-          {artist.sortName && (
-            <div className="text-sm text-gray-500">Sort: {artist.sortName}</div>
-          )}
           {artist.country && (
-            <div className="text-sm text-gray-500">Country: {artist.country}</div>
+            <div className="text-sm text-gray-500">🌍 {artist.country}</div>
           )}
           {artist.notes && (
             <div className="mt-2 text-sm text-gray-600">{artist.notes}</div>
@@ -118,6 +115,9 @@ export default async function ArtistPage({ params }: Props) {
                   .sort((a, b) => a.position - b.position)
                   .map(a => a.artist)
 
+                // Only show artist links for collaborations (albums with multiple artists)
+                const isCollaboration = artists.length > 1
+
                 return (
                   <AlbumCard
                     key={album.id}
@@ -129,11 +129,11 @@ export default async function ArtistPage({ params }: Props) {
                       rankValue: albumRating.rankValue > 0 ? albumRating.rankValue : null,
                       rankLabel: albumRating.rankLabel,
                     }}
-                    artists={artists} // Pass all artists
+                    artists={isCollaboration ? artists : undefined} // Only show artists for collaborations
                     year={album.year}
                     primaryType={album.primaryType}
                     coverSize="sm"
-                    showArtist={true}
+                    showArtist={isCollaboration}
                     showYear={true}
                     showType={true}
                     showTrackCount={true}

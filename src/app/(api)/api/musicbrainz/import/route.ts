@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { MusicBrainzClient } from '@/lib/musicbrainz'
-import { MBReleaseSchema, extractArtists, extractYear, mapPrimaryType } from '@/lib/schemas/musicbrainz'
+import { MBReleaseSchema, MBArtistSchema, extractArtists, extractYear, mapPrimaryType } from '@/lib/schemas/musicbrainz'
 import { prisma } from '@/lib/db'
 import { PrimaryType } from '@/generated/prisma/enums'
 import { createComponentLogger } from '@/lib/logger'
@@ -94,13 +94,44 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // 3. Create new artist if not found
+        // 3. Update existing artist if missing country
+        if (artistRecord && !artistRecord.country && artist.id) {
+          try {
+            const artistDetails = await mbClient.getArtist(artist.id)
+            const validatedArtist = MBArtistSchema.parse(artistDetails)
+            if (validatedArtist.country) {
+              artistRecord = await prisma.artist.update({
+                where: { id: artistRecord.id },
+                data: { country: validatedArtist.country }
+              })
+            }
+          } catch (error) {
+            // If artist fetch fails, continue without updating country
+            console.warn(`Failed to fetch artist details for ${artist.name}:`, error)
+          }
+        }
+
+        // 4. Create new artist if not found
         if (!artistRecord) {
+          // Fetch full artist details to get country information
+          let country = null
+          if (artist.id) {
+            try {
+              const artistDetails = await mbClient.getArtist(artist.id)
+              const validatedArtist = MBArtistSchema.parse(artistDetails)
+              country = validatedArtist.country || null
+            } catch (error) {
+              // If artist fetch fails, continue without country
+              console.warn(`Failed to fetch artist details for ${artist.name}:`, error)
+            }
+          }
+
           artistRecord = await prisma.artist.create({
             data: {
               name: artist.name,
               sortName: artist['sort-name'] || null,
               musicbrainzId: artist.id || null,
+              country,
             }
           })
         }
@@ -211,13 +242,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const logger = createComponentLogger('musicbrainz-import')
-    const body = await request.json().catch(() => ({}))
-    const session = await getServerSession(authOptions).catch(() => null)
     logger.error({ 
       err: error,
-      releaseId: body?.releaseId,
-      releaseGroupId: body?.releaseGroupId,
-      userId: session?.user?.id
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined,
     }, 'MusicBrainz import failed')
     
     // Handle specific error types
@@ -232,6 +260,17 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         )
       }
+      
+      // Return the actual error message for debugging
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'IMPORT_ERROR',
+          message: `Failed to import album: ${error.message}`,
+          details: error.stack,
+        },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json(

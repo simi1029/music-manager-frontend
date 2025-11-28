@@ -39,10 +39,12 @@ export interface PrismaAlbumWithReleases {
   coverValue: number | null
   productionValue: number | null
   mixValue: number | null
-  artist?: {
-    id: string
-    name: string
-  } | null
+  artists: {
+    artist: {
+      id: string
+      name: string
+    }
+  }[]
   releases: {
     tracks: PrismaTrackWithRatings[]
   }[]

@@ -7,7 +7,9 @@ import { BaseAlbum, BaseArtist } from './entities'
 
 // GET /api/albums response
 export interface AlbumListItem extends Pick<BaseAlbum, 'id' | 'title'> {
-  artist: BaseArtist // Changed from string to object for consistency
+  artists: BaseArtist[] // Array of all contributing artists
+  year: number | null
+  primaryType: string
   tracksCount: number
   albumRankValue: number | null
   albumRankLabel: string

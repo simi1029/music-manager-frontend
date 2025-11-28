@@ -79,6 +79,20 @@ export const AlbumCard = memo(function AlbumCard({
     [displayArtists]
   )
 
+  // Primary type color scheme - designed to work on all rating background colors
+  const primaryTypeStyle = useMemo(() => {
+    const styles: Record<string, { bg: string; text: string; border: string }> = {
+      'ALBUM': { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-300' },
+      'SINGLE': { bg: 'bg-violet-100', text: 'text-violet-800', border: 'border-violet-300' },
+      'EP': { bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-300' },
+      'COMPILATION': { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-300' },
+      'LIVE': { bg: 'bg-rose-100', text: 'text-rose-800', border: 'border-rose-300' },
+      'SOUNDTRACK': { bg: 'bg-fuchsia-100', text: 'text-fuchsia-800', border: 'border-fuchsia-300' },
+      'OTHER': { bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-300' },
+    }
+    return styles[primaryType || 'OTHER'] || styles['OTHER']
+  }, [primaryType])
+
   // Calculate rating-based styling
   const { quantized, bgClass, textColor, artistLinkColor, metadataColor } = useMemo(() => {
     const quantized = album.rankValue ?? null
@@ -200,10 +214,14 @@ export const AlbumCard = memo(function AlbumCard({
             )}
             
             {/* Metadata Line */}
-            <div className={`text-sm mt-1 ${metadataColor} flex items-center gap-1`}>
+            <div className={`text-sm mt-1 ${metadataColor} flex items-center gap-1.5`}>
               {showYear && year && <span>{year}</span>}
               {showYear && year && showType && primaryType && <span> · </span>}
-              {showType && primaryType && <span>{primaryType}</span>}
+              {showType && primaryType && (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${primaryTypeStyle.bg} ${primaryTypeStyle.text} ${primaryTypeStyle.border} border`}>
+                  {primaryType}
+                </span>
+              )}
               {((showYear && year) || (showType && primaryType)) && showTrackCount && album.tracksCount !== undefined && <span> · </span>}
               {showTrackCount && album.tracksCount !== undefined && (
                 <span className="flex items-center gap-1">

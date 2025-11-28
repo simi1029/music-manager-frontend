@@ -17,9 +17,13 @@ export function AlbumsContent({ albums }: { albums: AlbumListItem[] }) {
             rankValue: album.albumRankValue,
             rankLabel: album.albumRankLabel,
           }}
-          artist={album.artist}
+          artists={album.artists}
+          year={album.year}
+          primaryType={album.primaryType}
           coverSize="md"
           showArtist={true}
+          showYear={true}
+          showType={true}
           showTrackCount={true}
           showRating={true}
           showRatingAsLabel={true}

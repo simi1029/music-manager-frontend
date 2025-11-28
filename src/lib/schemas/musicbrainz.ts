@@ -35,6 +35,20 @@ export const MBArtistSearchResultSchema = z.object({
   score: z.number().optional(),      // Search relevance score
 }).passthrough()
 
+// Artist Detail (full artist info)
+export const MBArtistSchema = z.object({
+  id: z.string(),                    // Artist MBID
+  name: z.string(),                  // Artist name
+  'sort-name': z.string().optional(),
+  type: z.string().optional(),       // Person, Group, etc.
+  country: z.string().optional().nullable(),  // ISO country code (US, GB, JP, etc.)
+  disambiguation: z.string().optional(),
+  'life-span': z.object({
+    begin: z.string().optional().nullable(),
+    end: z.string().optional().nullable(),
+  }).optional(),
+}).passthrough()
+
 // Artist Search Response
 export const MBArtistSearchResponseSchema = z.object({
   artists: z.array(MBArtistSearchResultSchema),
@@ -115,7 +129,7 @@ const MBMediaSchema = z.object({
 
 // Label Info
 const MBLabelInfoSchema = z.object({
-  'catalog-number': z.string().optional(),
+  'catalog-number': z.string().optional().nullable(),
   label: z.object({
     id: z.string(),
     name: z.string(),
@@ -142,6 +156,7 @@ export const MBReleaseSchema = z.object({
 // TypeScript types derived from schemas
 export type MBArtistSearchResponse = z.infer<typeof MBArtistSearchResponseSchema>
 export type MBArtistSearchResult = z.infer<typeof MBArtistSearchResultSchema>
+export type MBArtist = z.infer<typeof MBArtistSchema>
 export type MBSearchResponse = z.infer<typeof MBSearchResponseSchema>
 export type MBSearchResult = z.infer<typeof MBSearchResultSchema>
 export type MBReleaseGroup = z.infer<typeof MBReleaseGroupSchema>

@@ -138,6 +138,20 @@ export class MusicBrainzClient {
     const url = `${MB_API_BASE}release/${releaseId}?${params.toString()}`
     return this.executeRequest(url)
   }
+
+  /**
+   * Get artist details including country
+   * 
+   * @param artistId - Artist MBID
+   */
+  async getArtist(artistId: string): Promise<any> {
+    const params = new URLSearchParams({
+      fmt: 'json',
+    })
+    
+    const url = `${MB_API_BASE}artist/${artistId}?${params.toString()}`
+    return this.executeRequest(url)
+  }
 }
 
 /**

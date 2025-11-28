@@ -23,13 +23,9 @@ export async function GET() {
       return {
         id: a.id,
         title: a.title,
-        artist: artists.length > 0 ? {
-          id: artists[0].id,
-          name: artists.map(art => art.name).join(' & '),
-        } : {
-          id: '',
-          name: 'Unknown'
-        },
+        artists: artists.map(a => ({ id: a.id, name: a.name })),
+        year: a.year,
+        primaryType: a.primaryType,
         tracksCount: transformed.tracks.length,
         albumRankValue: quantized,
         albumRankLabel: quantized !== null ? LABEL[quantized] : '—',
