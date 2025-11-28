@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { MusicBrainzClient } from '@/lib/musicbrainz'
 import { MBReleaseGroupSchema } from '@/lib/schemas/musicbrainz'
+import { createComponentLogger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,7 +54,9 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('MusicBrainz release group error:', error)
+    const logger = createComponentLogger('musicbrainz-release-groups')
+    const releaseGroupId = request.nextUrl.searchParams.get('releaseGroupId')
+    logger.error({ err: error, releaseGroupId }, 'Release group fetch failed')
     return NextResponse.json(
       { error: 'Failed to fetch release group details' },
       { status: 500 }

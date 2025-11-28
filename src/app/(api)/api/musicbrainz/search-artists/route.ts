@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { MusicBrainzClient } from '@/lib/musicbrainz'
 import { MBArtistSearchResponseSchema } from '@/lib/schemas/musicbrainz'
+import { createComponentLogger } from '@/lib/logger'
 import { z } from 'zod'
 
 const QuerySchema = z.object({
@@ -55,7 +56,9 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('MusicBrainz artist search error:', error)
+    const logger = createComponentLogger('musicbrainz-search-artists')
+    const queryParam = request.nextUrl.searchParams.get('query')
+    logger.error({ err: error, query: queryParam }, 'Artist search failed')
     return NextResponse.json(
       { error: 'Failed to search artists' },
       { status: 500 }

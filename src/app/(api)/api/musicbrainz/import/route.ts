@@ -5,6 +5,7 @@ import { MusicBrainzClient } from '@/lib/musicbrainz'
 import { MBReleaseSchema, extractArtists, extractYear, mapPrimaryType } from '@/lib/schemas/musicbrainz'
 import { prisma } from '@/lib/db'
 import { PrimaryType } from '@/generated/prisma/enums'
+import { createComponentLogger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -176,7 +177,15 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('MusicBrainz import error:', error)
+    const logger = createComponentLogger('musicbrainz-import')
+    const body = await request.json().catch(() => ({}))
+    const session = await getServerSession(authOptions).catch(() => null)
+    logger.error({ 
+      err: error,
+      releaseId: body?.releaseId,
+      releaseGroupId: body?.releaseGroupId,
+      userId: session?.user?.id
+    }, 'MusicBrainz import failed')
     
     // Handle specific error types
     if (error instanceof Error) {

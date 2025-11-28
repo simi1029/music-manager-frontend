@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ImportSearch from '@/components/import/ImportSearch'
 import SearchResults from '@/components/import/SearchResults'
+import { createComponentLogger } from '@/lib/logger'
 
 interface SearchResult {
   mbid: string
@@ -15,6 +16,8 @@ interface SearchResult {
   alreadyImported: boolean
   existingAlbumId: string | null
 }
+
+const logger = createComponentLogger('import-page')
 
 export default function ImportPage() {
   const router = useRouter()
@@ -58,7 +61,7 @@ export default function ImportPage() {
 
       setSearchResults(data.results || [])
     } catch (err) {
-      console.error('Search error:', err)
+      logger.error({ err, searchData }, 'Search failed')
       setError(err instanceof Error ? err.message : 'Search failed')
       setSearchResults([])
     } finally {
@@ -126,7 +129,7 @@ export default function ImportPage() {
       // For now, we'll just update the UI
       
     } catch (err) {
-      console.error('Import error:', err)
+      logger.error({ err, releaseGroupId, albumTitle: title }, 'Import failed')
       setError(err instanceof Error ? err.message : 'Import failed')
     } finally {
       setIsImporting(false)

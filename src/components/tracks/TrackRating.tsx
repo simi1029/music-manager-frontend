@@ -3,6 +3,7 @@
 import { useState, memo, useMemo, useCallback } from 'react'
 import { RATING_COLORS, RATING_BG } from '@/lib/rating'
 import { useToast } from '@/components/ui/toast'
+import { createComponentLogger } from '@/lib/logger'
 
 type TrackRatingProps = {
   trackId: string
@@ -38,7 +39,8 @@ export const TrackRating = memo(function TrackRating({
       setRating(score)
       onRatingChange?.()
     } catch (error) {
-      console.error('Error saving rating:', error)
+      const logger = createComponentLogger('track-rating')
+      logger.error({ err: error, trackId, score }, 'Failed to save track rating')
       showToast('Failed to save rating', 'error')
     } finally {
       setIsSubmitting(false)
@@ -57,7 +59,8 @@ export const TrackRating = memo(function TrackRating({
       setRating(null)
       onRatingChange?.()
     } catch (error) {
-      console.error('Error deleting rating:', error)
+      const logger = createComponentLogger('track-rating')
+      logger.error({ err: error, trackId }, 'Failed to delete track rating')
       showToast('Failed to delete rating', 'error')
     } finally {
       setIsSubmitting(false)

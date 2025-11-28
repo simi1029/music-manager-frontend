@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createComponentLogger } from '@/lib/logger'
 
 /**
  * Unified error handler for API routes
@@ -25,7 +26,8 @@ export async function withErrorHandler<T>(
     return NextResponse.json(result)
   } catch (error) {
     // Log error with context for debugging
-    console.error(`[API Error] Failed to ${context}:`, error)
+    const logger = createComponentLogger('api-helper')
+    logger.error({ err: error, context }, `API operation failed: ${context}`)
     
     // Handle authentication errors
     if (error instanceof Error && error.message === 'Unauthorized') {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createComponentLogger } from '@/lib/logger'
 
 type AlbumModifiersProps = {
   albumId: string
@@ -38,7 +39,12 @@ export function AlbumModifiers({
       if (!res.ok) throw new Error('Failed to save modifiers')
       router.refresh()
     } catch (error) {
-      console.error('Error saving modifiers:', error)
+      const logger = createComponentLogger('album-modifiers')
+      logger.error({ 
+        err: error, 
+        albumId, 
+        modifiers: { cover, production, mix }
+      }, 'Failed to save album modifiers')
       alert('Failed to save modifiers')
     } finally {
       setIsSubmitting(false)

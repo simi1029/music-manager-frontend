@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { MusicBrainzClient, buildSearchQuery } from '@/lib/musicbrainz'
 import { MBSearchResponseSchema, formatArtistCredit, extractYear } from '@/lib/schemas/musicbrainz'
 import { prisma } from '@/lib/db'
+import { createComponentLogger } from '@/lib/logger'
 
 /**
  * GET /api/musicbrainz/search
@@ -84,7 +85,8 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({ results })
   } catch (error) {
-    console.error('MusicBrainz search error:', error)
+    const logger = createComponentLogger('musicbrainz-search')
+    logger.error({ err: error, searchParams: Object.fromEntries(request.nextUrl.searchParams) }, 'Search failed')
     return NextResponse.json(
       { error: 'INTERNAL_ERROR', message: 'Failed to search MusicBrainz' },
       { status: 500 }

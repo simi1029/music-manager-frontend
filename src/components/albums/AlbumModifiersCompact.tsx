@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { quantizeRank, RATING_COLORS, RATING_BG } from '@/lib/rating'
 import { useToast } from '@/components/ui/toast'
+import { createComponentLogger } from '@/lib/logger'
 
 type AlbumModifiersCompactProps = {
   albumId: string
@@ -59,7 +60,12 @@ export function AlbumModifiersCompact({
       router.refresh()
       setIsExpanded(false)
     } catch (error) {
-      console.error('Error saving modifiers:', error)
+      const logger = createComponentLogger('album-modifiers-compact')
+      logger.error({ 
+        err: error, 
+        albumId, 
+        modifiers: { cover, production, mix }
+      }, 'Failed to save album modifiers')
       showToast('Failed to save modifiers', 'error')
     } finally {
       setIsSubmitting(false)
