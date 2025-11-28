@@ -46,7 +46,7 @@ export const MBSearchResultSchema = z.object({
   id: z.string(),                          // Release Group MBID (required)
   title: z.string(),                       // Album title (required)
   'primary-type': z.string(),              // REQUIRED: Album, Single, EP, etc.
-  'first-release-date': z.string(),        // REQUIRED: "1969-09-26" or "1969"
+  'first-release-date': z.string().optional(),  // OPTIONAL: "1969-09-26" or "1969" (can be undefined)
   'artist-credit': MBArtistCreditSchema,   // REQUIRED: Artist info
   'secondary-types': z.array(z.string()).optional(),  // Compilation, Live, etc.
   disambiguation: z.string().optional(),
@@ -64,15 +64,15 @@ export const MBSearchResponseSchema = z.object({
 const MBReleaseInfoSchema = z.object({
   id: z.string(),                    // Release MBID
   title: z.string(),
-  status: z.string().optional(),     // Official, Promotion, Bootleg
-  date: z.string().optional(),       // More specific than first-release-date
-  country: z.string().optional(),    // US, GB, JP, etc.
-  barcode: z.string().optional(),
-  'track-count': z.number().optional(),
+  status: z.string().optional().nullable(),     // Official, Promotion, Bootleg
+  date: z.string().optional().nullable(),       // More specific than first-release-date
+  country: z.string().optional().nullable(),    // US, GB, JP, etc.
+  barcode: z.string().optional().nullable(),    // Can be null or undefined
+  'track-count': z.number().optional().nullable(),
   media: z.array(z.object({
-    format: z.string().optional(),   // CD, Vinyl, Digital
-    'track-count': z.number().optional(),
-  })).optional(),
+    format: z.string().optional().nullable(),   // CD, Vinyl, Digital
+    'track-count': z.number().optional().nullable(),
+  })).optional().nullable(),
 }).passthrough()
 
 // Release Group Details (album-level)
@@ -80,7 +80,7 @@ export const MBReleaseGroupSchema = z.object({
   id: z.string(),                          // MBID (required)
   title: z.string(),                       // Album title (required)
   'primary-type': z.string(),              // REQUIRED: Album, Single, EP
-  'first-release-date': z.string(),        // REQUIRED: Year info
+  'first-release-date': z.string().optional(),  // OPTIONAL: Year info (can be undefined)
   'artist-credit': MBArtistCreditSchema,   // REQUIRED: Artist info
   'secondary-types': z.array(z.string()).optional(),
   disambiguation: z.string().optional(),
@@ -125,9 +125,9 @@ const MBLabelInfoSchema = z.object({
 export const MBReleaseSchema = z.object({
   id: z.string(),                          // Release MBID (required)
   title: z.string(),                       // Release title (required)
-  date: z.string(),                        // REQUIRED: Release date
-  status: z.string().optional(),           // Official, Promotion, Bootleg
-  country: z.string().optional(),
+  date: z.string().optional().nullable(),  // Release date (can be null or undefined)
+  status: z.string().optional().nullable(),           // Official, Promotion, Bootleg
+  country: z.string().optional().nullable(),
   barcode: z.string().optional().nullable(),
   'artist-credit': MBArtistCreditSchema,   // Release-level artist credit
   'label-info': z.array(MBLabelInfoSchema).optional(),
@@ -184,7 +184,7 @@ export function extractArtists(artistCredit: MBArtistCredit) {
  * "1969" -> 1969
  * "1969-09" -> 1969
  */
-export function extractYear(dateString: string | undefined): number | null {
+export function extractYear(dateString: string | undefined | null): number | null {
   if (!dateString) return null
   const match = dateString.match(/^(\d{4})/)
   return match ? parseInt(match[1], 10) : null
