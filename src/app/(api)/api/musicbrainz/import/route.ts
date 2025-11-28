@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { MusicBrainzClient } from '@/lib/musicbrainz'
 import { MBReleaseSchema, extractArtists, extractYear, mapPrimaryType } from '@/lib/schemas/musicbrainz'
 import { prisma } from '@/lib/db'
+import { PrimaryType } from '@/generated/prisma/enums'
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,9 +91,9 @@ export async function POST(request: NextRequest) {
     // Extract album info
     const albumTitle = release.title
     const year = extractYear(release.date)
-    const albumType = release['release-group']?.['primary-type'] 
+    const albumType: PrimaryType = release['release-group']?.['primary-type'] 
       ? mapPrimaryType(release['release-group']['primary-type'])
-      : 'ALBUM'
+      : PrimaryType.ALBUM
 
     // Flatten all tracks from all media
     const allTracks = release.media?.flatMap((medium, mediumIndex) => 
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
       data: {
         title: albumTitle,
         year,
-        primaryType: albumType as any,
+        primaryType: albumType,
         artistId: artistRecords[0].id, // Use first artist as primary
         external: {
           create: {

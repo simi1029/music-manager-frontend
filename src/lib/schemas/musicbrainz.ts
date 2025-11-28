@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod'
+import { PrimaryType } from '@/generated/prisma/enums'
 
 // Artist Credit Item
 // MusicBrainz uses complex artist-credit arrays for collaborations
@@ -193,18 +194,18 @@ export function extractYear(dateString: string | undefined | null): number | nul
 /**
  * Map MusicBrainz primary-type to our PrimaryType enum
  */
-export function mapPrimaryType(mbType: string): 'ALBUM' | 'SINGLE' | 'EP' | 'COMPILATION' | 'LIVE' | 'SOUNDTRACK' | 'OTHER' {
-  const typeMap: Record<string, 'ALBUM' | 'SINGLE' | 'EP' | 'COMPILATION' | 'LIVE' | 'SOUNDTRACK' | 'OTHER'> = {
-    'Album': 'ALBUM',
-    'Single': 'SINGLE',
-    'EP': 'EP',
-    'Compilation': 'COMPILATION',
-    'Live': 'LIVE',
-    'Soundtrack': 'SOUNDTRACK',
-    'Broadcast': 'OTHER',
-    'Other': 'OTHER',
+export function mapPrimaryType(mbType: string): PrimaryType {
+  const typeMap: Record<string, PrimaryType> = {
+    'Album': PrimaryType.ALBUM,
+    'Single': PrimaryType.SINGLE,
+    'EP': PrimaryType.EP,
+    'Compilation': PrimaryType.COMPILATION,
+    'Live': PrimaryType.LIVE,
+    'Soundtrack': PrimaryType.SOUNDTRACK,
+    'Broadcast': PrimaryType.OTHER,
+    'Other': PrimaryType.OTHER,
   }
-  return typeMap[mbType] || 'OTHER'
+  return typeMap[mbType] || PrimaryType.OTHER
 }
 
 /**
