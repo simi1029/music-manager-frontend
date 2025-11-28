@@ -343,7 +343,7 @@ describe('getAlbumWithRatings', () => {
     const result = await getAlbumWithRatings('album1')
 
     expect(result).toEqual(completeAlbum)
-    expect(result?.artist).toBeDefined()
+    expect(result?.artists).toBeDefined()
     expect(result?.releases).toHaveLength(1)
     expect(result?.releases[0].tracks).toHaveLength(1)
     expect(result?.releases[0].tracks[0].ratings).toHaveLength(1)

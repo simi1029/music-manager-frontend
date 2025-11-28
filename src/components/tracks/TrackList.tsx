@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback } from 'react'
-import { TrackRating } from './TrackRating'
+import { TrackRatingCompact } from './TrackRatingCompact'
+// import { TrackRating } from './TrackRating' // Old inline version (kept for reference)
 import { useRouter } from 'next/navigation'
 import type { TrackWithRatings } from '@/types/components'
 
@@ -18,9 +19,9 @@ export function TrackList({ tracks }: TrackListProps) {
   }, [router])
 
   return (
-    <ol className="mt-2 space-y-2">
+    <ol className="mt-2 space-y-1">
       {tracks.map((t) => (
-        <TrackRating
+        <TrackRatingCompact
           key={t.id}
           trackId={t.id}
           trackNumber={t.number}

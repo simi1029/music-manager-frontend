@@ -241,7 +241,7 @@ export const AlbumCard = memo(function AlbumCard({
 
           {/* Rating */}
           {showRating && quantized !== null && (
-            <div className="ml-4 shrink-0 w-max">
+            <div className="text-right ml-4 flex-shrink-0">
               <RatingBadge
                 rankValue={album.rankValue}
                 rankLabel={album.rankLabel}

@@ -31,7 +31,7 @@ export function Header() {
   
   return (
     <header className="border-b bg-white sticky top-0 z-50">
-      <div className="mx-auto max-w-5xl px-6 py-4">
+      <div className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-center justify-between">
           <Link href="/albums" className="text-xl font-semibold text-gray-900 hover:text-gray-700">
             🎵 Music Manager

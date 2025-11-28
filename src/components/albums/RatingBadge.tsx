@@ -100,7 +100,7 @@ export const RatingBadge = memo(function RatingBadge({
 
   if (display === 'label') {
     return (
-      <div className={`${baseClass} whitespace-nowrap inline-block`}>
+      <div className={baseClass}>
         {labelText}
       </div>
     )

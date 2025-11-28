@@ -14,7 +14,7 @@ async function getData(): Promise<AlbumListItem[]> {
 export default async function AlbumsPage() {
   const albums = await getData()
   return (
-    <main className="mx-auto max-w-5xl p-6 space-y-6">
+    <main className="mx-auto max-w-4xl p-6 space-y-6">
       <h1 className="text-2xl font-semibold">Your Albums</h1>
       <AlbumsContent albums={albums} />
     </main>

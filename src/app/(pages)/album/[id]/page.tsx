@@ -21,7 +21,7 @@ export default async function AlbumPage({ params }: Props) {
   const { album, tracks, hasRatings, rating: albumRating } = transformAlbumFirstRelease(a)
 
   return (
-    <main className="mx-auto max-w-5xl p-6 space-y-6">
+    <main className="mx-auto max-w-4xl p-6 space-y-6">
       <div className="flex gap-6 min-h-[192px]">
         {/* Album Cover Placeholder */}
         <div className="flex-shrink-0">
