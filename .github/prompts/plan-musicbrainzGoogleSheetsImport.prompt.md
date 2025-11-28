@@ -3,38 +3,64 @@
 ## Overview
 
 This plan covers two major import features:
-1. **MusicBrainz Import** - Import albums (with tracks and artists) from MusicBrainz API
-2. **Google Sheets Import** (Future Phase) - Batch import user ratings for existing albums
+1. **MusicBrainz Import** - Import albums (with tracks and artists) from MusicBrainz API ⚠️ **PARTIALLY COMPLETE**
+2. **Google Sheets Import** (Future Phase) - Batch import user ratings for existing albums ❌ **NOT STARTED**
 
 ---
 
-## Part 1: MusicBrainz Import (Phase 2 & 3)
+## 🚨 CURRENT STATUS: BASIC MUSICBRAINZ IMPORT WORKING
 
-### Step 1: MusicBrainz API Client Setup
+### ✅ What's Working (MVP Complete)
+- **Basic Search & Import**: Users can search MusicBrainz and import albums
+- **API Integration**: All core MusicBrainz API calls implemented 
+- **Database Import**: Albums, artists, tracks, and external references are created
+- **UI Components**: Basic search form and results display
+- **Duplicate Prevention**: Albums won't be imported twice
+- **Authentication**: All endpoints properly secured
 
-**File:** `src/lib/musicbrainz.ts`
+### ⚠️ Current Limitations (vs Full Plan)
+1. **No Release Selection**: Always imports first release (no CD/Vinyl/region choice)
+2. **Single Artists Only**: Multi-artist albums import only primary artist
+3. **No Track Preview**: No modal to review tracks before import 
+4. **Basic Search**: No advanced "Artist-first" search mode
+5. **No Edition Picker**: No UI to choose between different editions
+
+### 🔴 Critical Missing Features for Production
+1. **Release Selection Modal** - Users should choose CD vs Vinyl vs Digital editions
+2. **Multi-Artist Support** - Database schema needs many-to-many artist relationships  
+3. **Track Preview** - Show track list and duration warnings before import
+
+---
+
+---
+
+## Part 1: MusicBrainz Import (Phase 2 & 3) ✅ PARTIALLY COMPLETE
+
+### Step 1: MusicBrainz API Client Setup ✅ COMPLETE
+
+**File:** `src/lib/musicbrainz.ts` ✅ IMPLEMENTED
 
 **API Documentation:** https://musicbrainz.org/doc/MusicBrainz_API
 
-**Core Configuration:**
+**Core Configuration:** ✅ COMPLETE
 ```typescript
 const MB_API_BASE = 'https://musicbrainz.org/ws/2/'
 const USER_AGENT = 'MusicManager/0.1.0 (sim.david90@gmail.com)'
 const RATE_LIMIT_MS = 1000 // STRICT: 1 request per second (enforced by MusicBrainz)
 ```
 
-**Core Functions:**
+**Core Functions:** ✅ IMPLEMENTED
 ```typescript
-// Search for release groups (albums) by query
+// ✅ IMPLEMENTED - Search for release groups (albums) by query
 searchReleaseGroups(query: string, limit?: number): Promise<MBSearchResult[]>
 
-// Search for artists by name (NEW)
+// ✅ IMPLEMENTED - Search for artists by name 
 searchArtists(query: string, limit?: number): Promise<MBArtistSearchResult[]>
 
-// Get release group details with artist info
+// ❌ NOT IMPLEMENTED - Get release group details with artist info
 getReleaseGroupDetails(mbid: string): Promise<MBReleaseGroup>
 
-// Get specific release with full track list
+// ✅ IMPLEMENTED - Get specific release with full track list
 getRelease(releaseId: string): Promise<MBRelease>
 ```
 
@@ -167,15 +193,15 @@ function buildSearchQuery(artistQuery: string, albumQuery: string): string {
 
 ---
 
-### Step 2: Zod Schemas for Validation
+### Step 2: Zod Schemas for Validation ✅ COMPLETE
 
-**File:** `src/lib/schemas/musicbrainz.ts`
+**File:** `src/lib/schemas/musicbrainz.ts` ✅ IMPLEMENTED
 
-**Validation Strategy:** Lenient with required core fields
-- Allow unknown fields (`.passthrough()`)
-- Require critical fields for import success
-- Optional fields default to null/undefined
-- Transform data in import logic, not schemas
+**Validation Strategy:** ✅ COMPLETE - Lenient with required core fields
+- Allow unknown fields (`.passthrough()`) ✅ IMPLEMENTED
+- Require critical fields for import success ✅ IMPLEMENTED  
+- Optional fields default to null/undefined ✅ IMPLEMENTED
+- Transform data in import logic, not schemas ✅ IMPLEMENTED
 
 **Schemas Needed:**
 
@@ -426,12 +452,12 @@ export function formatDuration(ms: number | null): string {
 
 ---
 
-### Step 3: Import API Routes
+### Step 3: Import API Routes ✅ PARTIALLY COMPLETE
 
-**Authentication:** All endpoints require authenticated session (NextAuth)
+**Authentication:** All endpoints require authenticated session (NextAuth) ✅ IMPLEMENTED
 
-#### Route 1: Search Release Groups
-**File:** `src/app/(api)/api/musicbrainz/search/route.ts`
+#### Route 1: Search Release Groups ✅ COMPLETE
+**File:** `src/app/(api)/api/musicbrainz/search/route.ts` ✅ IMPLEMENTED
 
 ```typescript
 // GET /api/musicbrainz/search?artist=Beatles&album=Abbey+Road
@@ -506,8 +532,8 @@ export async function GET(request: Request) {
 
 ---
 
-#### Route 1b: Search Artists (NEW)
-**File:** `src/app/(api)/api/musicbrainz/search-artists/route.ts`
+#### Route 1b: Search Artists ✅ COMPLETE  
+**File:** `src/app/(api)/api/musicbrainz/search-artists/route.ts` ✅ IMPLEMENTED
 
 ```typescript
 // GET /api/musicbrainz/search-artists?artist=Beatles
@@ -594,11 +620,15 @@ export async function GET(request: Request) {
 
 ---
 
-#### Route 2: Get Available Releases (Editions)
-**File:** `src/app/(api)/api/musicbrainz/releases/route.ts`
+#### Route 2: Get Available Releases (Editions) ⚠️ MODIFIED IMPLEMENTATION
+**File:** `src/app/(api)/api/musicbrainz/releases/route.ts` ⚠️ IMPLEMENTED WITH DIFFERENT PARAMS
+
+**Current Implementation:** `GET /api/musicbrainz/releases?releaseId=<RELEASE_MBID>` (single release)
+**Planned:** `GET /api/musicbrainz/releases?mbid=<RELEASE_GROUP_MBID>` (all releases for album)
 
 ```typescript
-// GET /api/musicbrainz/releases?mbid=<RELEASE_GROUP_MBID>
+// ⚠️ CURRENT - Get single release details
+// GET /api/musicbrainz/releases?releaseId=<RELEASE_MBID>
 export async function GET(request: Request) {
   // 1. Check authentication
   const session = await getServerSession(authOptions)
@@ -677,12 +707,12 @@ export async function GET(request: Request) {
 
 ---
 
-#### Route 3: Import Album
-**File:** `src/app/(api)/api/musicbrainz/import/route.ts`
+#### Route 3: Import Album ✅ COMPLETE  
+**File:** `src/app/(api)/api/musicbrainz/import/route.ts` ✅ IMPLEMENTED
 
 ```typescript
-// POST /api/musicbrainz/import
-// Body: { releaseGroupMbid: string, releaseMbid: string }
+// ✅ IMPLEMENTED - POST /api/musicbrainz/import
+// Body: { releaseId: string, releaseGroupId: string }
 export async function POST(request: Request) {
   // 1. Check authentication
   const session = await getServerSession(authOptions)
@@ -837,13 +867,17 @@ export async function POST(request: Request) {
 
 ---
 
-### Step 4: Database Import Logic
+### Step 4: Database Import Logic ⚠️ SIMPLIFIED IMPLEMENTATION
 
-**File:** `src/lib/import/musicbrainz.ts`
+**File:** `src/lib/import/musicbrainz.ts` ❌ NOT CREATED - Logic embedded in route
 
-**Schema Changes Required:**
+**Current Implementation:** Import logic is directly in `src/app/(api)/api/musicbrainz/import/route.ts`
 
-First, we need to add a many-to-many relationship for multi-artist albums:
+**Schema Changes Required:** ❌ NOT IMPLEMENTED
+
+**Current Schema Status:** ⚠️ SINGLE ARTIST ONLY - Multi-artist albums not supported yet
+
+The current database schema only supports single artists per album. Multi-artist relationships are not implemented:
 
 ```prisma
 // In prisma/schema.prisma
@@ -1230,21 +1264,27 @@ export async function getArtistAlbums(artistId: string) {
 
 ---
 
-### Step 5: Import UI (Phase 3)
+### Step 5: Import UI (Phase 3) ⚠️ BASIC IMPLEMENTATION
 
-**User Flow:**
-1. Navigate to `/import` page
-2. Enter search query (single field: "Artist - Album" or just album)
-3. See search results with "Already Imported" badges
-4. Click album → Modal shows available releases/editions
-5. Select release → Optional preview with track list
-6. Confirm import → Toast notification with "View Album" action
-7. Continue importing more albums or view imported album
+**Current User Flow:** ⚠️ SIMPLIFIED
+1. ✅ Navigate to `/import` page - IMPLEMENTED  
+2. ✅ Enter search query (Artist/Album/Barcode modes) - IMPLEMENTED
+3. ✅ See search results with "Already Imported" badges - IMPLEMENTED
+4. ❌ Click album → **MISSING**: Modal shows available releases/editions  
+5. ❌ Select release → **MISSING**: Optional preview with track list
+6. ⚠️ **CURRENT**: Auto-selects first release and imports directly
+7. ✅ Success feedback - IMPLEMENTED
+
+**Missing Components:**
+- Release selection modal
+- Track preview modal  
+- Release edition picker UI
+- Artist selector for artist-first search mode
 
 ---
 
-#### Component 1: Import Page
-**File:** `src/app/(pages)/import/page.tsx`
+#### Component 1: Import Page ✅ COMPLETE
+**File:** `src/app/(pages)/import/page.tsx` ✅ IMPLEMENTED
 
 ```tsx
 import { ImportSearchClient } from '@/components/import/ImportSearch'
@@ -1267,8 +1307,15 @@ export default function ImportPage() {
 
 ---
 
-#### Component 2: Import Search (Main Client Component)
-**File:** `src/components/import/ImportSearch.tsx`
+#### Component 2: Import Search (Main Client Component) ⚠️ SIMPLIFIED
+**File:** `src/components/import/ImportSearch.tsx` ⚠️ BASIC IMPLEMENTATION
+
+**Current Implementation:** Simple search form with Artist/Album/Barcode modes
+**Missing Features:**
+- Combined "Artist - Album" parsing 
+- Artist-first search mode with artist selector
+- Advanced search query building
+- Debounced search
 
 ```tsx
 'use client'
@@ -1632,8 +1679,8 @@ function parseSearchInput(input: string): { artist: string; album: string } {
 
 ---
 
-#### Component 2b: Artist Selector
-**File:** `src/components/import/ArtistSelector.tsx`
+#### Component 2b: Artist Selector ❌ NOT IMPLEMENTED
+**File:** `src/components/import/ArtistSelector.tsx` ❌ MISSING
 
 ```tsx
 'use client'
@@ -1679,8 +1726,8 @@ export function ArtistSelector({ artists, onSelect }: ArtistSelectorProps) {
 
 ---
 
-#### Component 3: Search Form
-**File:** `src/components/import/SearchForm.tsx`
+#### Component 3: Search Form ✅ INTEGRATED
+**File:** `src/components/import/SearchForm.tsx` ❌ NOT SEPARATE - Integrated into ImportSearch.tsx
 
 ```tsx
 'use client'
@@ -1754,8 +1801,8 @@ export function SearchForm({ mode, query, hasSelectedArtist, onQueryChange, onSu
 
 ---
 
-#### Component 4: Search Results Grid
-**File:** `src/components/import/SearchResults.tsx`
+#### Component 4: Search Results Grid ✅ COMPLETE  
+**File:** `src/components/import/SearchResults.tsx` ✅ IMPLEMENTED
 
 ```tsx
 'use client'
@@ -1824,8 +1871,8 @@ export function SearchResults({ results, loading, error, onAlbumClick }: SearchR
 
 ---
 
-#### Component 5: Search Result Card
-**File:** `src/components/import/SearchResultCard.tsx`
+#### Component 5: Search Result Card ✅ INTEGRATED
+**File:** `src/components/import/SearchResultCard.tsx` ❌ NOT SEPARATE - Integrated into SearchResults.tsx
 
 ```tsx
 'use client'
@@ -1891,8 +1938,8 @@ export function SearchResultCard({ result, onClick }: SearchResultCardProps) {
 
 ---
 
-#### Component 6: Search Result Skeleton
-**File:** `src/components/import/SearchResultSkeleton.tsx`
+#### Component 6: Search Result Skeleton ❌ NOT IMPLEMENTED
+**File:** `src/components/import/SearchResultSkeleton.tsx` ❌ MISSING
 
 ```tsx
 export function SearchResultSkeleton() {
@@ -1910,8 +1957,8 @@ export function SearchResultSkeleton() {
 
 ---
 
-#### Component 7: Release Selection Modal
-**File:** `src/components/import/ReleaseSelectionModal.tsx`
+#### Component 7: Release Selection Modal ❌ NOT IMPLEMENTED
+**File:** `src/components/import/ReleaseSelectionModal.tsx` ❌ MISSING - **HIGH PRIORITY**
 
 ```tsx
 'use client'
@@ -2045,8 +2092,8 @@ export function ReleaseSelectionModal({ album, onSelect, onClose }: ReleaseSelec
 
 ---
 
-#### Component 8: Import Preview Modal
-**File:** `src/components/import/ImportPreviewModal.tsx`
+#### Component 8: Import Preview Modal ❌ NOT IMPLEMENTED
+**File:** `src/components/import/ImportPreviewModal.tsx` ❌ MISSING
 
 ```tsx
 'use client'
@@ -2350,26 +2397,88 @@ Or simplified:
 
 ---
 
+## 🚀 NEXT PHASE: COMPLETE MUSICBRAINZ IMPORT (PRIORITY ORDER)
+
+### Phase A: Critical Production Features (Week 1) 🔴 HIGH PRIORITY
+
+#### A1. Release Selection Modal (8 hours)
+**Status:** ❌ MISSING - **CRITICAL FOR UX**
+- Create `ReleaseSelectionModal.tsx` component  
+- Update `/api/musicbrainz/release-groups` to return all releases for album
+- Show different editions: CD, Vinyl, Digital, different regions
+- Let user pick before import instead of auto-selecting first
+
+#### A2. Multi-Artist Database Schema (4 hours)  
+**Status:** ❌ MISSING - **CRITICAL FOR DATA ACCURACY**
+- Add `ReleaseGroupArtist` junction table to schema
+- Add `Artist.musicbrainzId` field for better matching
+- Update import logic to handle collaborations properly
+- Test with albums like "David Bowie & Queen - Under Pressure"
+
+#### A3. Track Preview Modal (4 hours)
+**Status:** ❌ MISSING - **IMPORTANT FOR TRANSPARENCY** 
+- Create `ImportPreviewModal.tsx` component
+- Show full track list before import
+- Highlight tracks with missing durations  
+- Let user cancel if track list looks wrong
+
+### Phase B: Enhanced UX Features (Week 2) 🟡 MEDIUM PRIORITY
+
+#### B1. Advanced Search Modes (6 hours)
+- Artist-first search with artist disambiguation
+- Combined "Artist - Album" parsing
+- Debounced search with loading states
+- Search result skeletons
+
+#### B2. Better Import Flow (4 hours) 
+- Progress indicators during import
+- Better success/error messages
+- Toast notifications with "View Album" action
+- Import history/recent imports
+
+### Phase C: Google Sheets Integration (Future) 🟢 LOW PRIORITY
+
+#### C1. CSV Upload & Preview (8 hours)
+- File upload component with drag & drop
+- CSV parsing and validation
+- Preview table with error highlighting
+- Album matching algorithm
+
+#### C2. Batch Import Processing (8 hours)
+- Progress tracking for large imports
+- Skip/retry failed items
+- Conflict resolution (existing vs new ratings)
+- Import summary report
+
+---
+
 ## Recommended Implementation Order
 
-### Phase 1: MusicBrainz Foundation (Week 1)
+### ✅ Phase 1: MusicBrainz MVP (COMPLETE)
 1. ✅ API client with rate limiting
-2. ✅ Zod schemas
+2. ✅ Zod schemas  
 3. ✅ Search API route
 4. ✅ Import API route
-5. ✅ Database import logic
+5. ✅ Basic database import logic
 
-### Phase 2: MusicBrainz UI (Week 2)
+### ✅ Phase 2: Basic MusicBrainz UI (COMPLETE)
 1. ✅ Import page with search
 2. ✅ Search results grid
-3. ✅ Import preview modal (optional)
+3. ⚠️ **SIMPLIFIED** - Auto-imports first release
 4. ✅ Success/error handling
-5. ✅ Quick access button on albums page
+5. ❌ **MISSING** - Quick access button on albums page
 
-### Phase 3: Google Sheets Ratings Import (Future)
+### 🚨 Phase 3: Production-Ready Import (CURRENT PRIORITY)
+1. ❌ Release selection modal
+2. ❌ Multi-artist database schema 
+3. ❌ Track preview modal
+4. ❌ Advanced search modes
+5. ❌ Enhanced import flow
+
+### Phase 4: Google Sheets Ratings Import (Future)
 1. CSV upload component
 2. Fuzzy album matching algorithm
-3. Match preview with confidence scores
+3. Match preview with confidence scores  
 4. Batch ratings import API
 5. Conflict resolution UI (existing vs new ratings)
 6. Unmatched entries report
@@ -2400,14 +2509,32 @@ Or simplified:
 
 ---
 
-## Success Criteria
+## 📋 COMPLETION CHECKLIST
 
-### MusicBrainz Import
+### ✅ MusicBrainz Import (Current Status)
 - ✅ Can search and find albums accurately
-- ✅ Import completes in < 5 seconds per album
+- ✅ Import completes in < 5 seconds per album  
 - ✅ Duplicates are detected and prevented
 - ✅ Track data is accurate (title, duration, order)
-- ✅ Artists are properly matched/created
+- ⚠️ **PARTIAL** - Artists are properly matched/created (single artist only)
+- ✅ Error messages are clear and actionable
+
+### 🚨 Critical Gaps (Must Fix)
+- ❌ **No Release Selection** - Users can't choose CD vs Vinyl vs Digital
+- ❌ **Single Artist Limitation** - Collaborations break or lose secondary artists  
+- ❌ **No Track Preview** - Users don't see what they're importing
+- ❌ **Auto-First Release** - May import wrong edition (e.g., remaster instead of original)
+
+### 🎯 Success Criteria (Full Implementation)
+
+#### MusicBrainz Import (Production Ready)
+- ✅ Can search and find albums accurately
+- ✅ Import completes in < 5 seconds per album
+- ✅ Duplicates are detected and prevented  
+- ✅ Track data is accurate (title, duration, order)
+- ❌ **NEEDED** - Multi-artist albums properly handled
+- ❌ **NEEDED** - Users can select specific release edition
+- ❌ **NEEDED** - Track preview before import
 - ✅ Error messages are clear and actionable
 
 ### Google Sheets Ratings Import
